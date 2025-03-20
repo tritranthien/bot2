@@ -208,7 +208,7 @@ async function sendHelpMessage(message) {
 \`${config.prefix}campuchia @user\` - Chích điện người dùng
 \`${config.prefix}ai [content]\` - Gọi AI
 \`${config.prefix}clear\` - Xóa tất cả tin nhắn của bot
-\`${config.prefix}test2\` - test
+\`${config.prefix}test4\` - test
 `;
   message.channel.send(helpText);
 }
