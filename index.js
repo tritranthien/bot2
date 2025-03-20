@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+require("./server.js");
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
