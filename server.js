@@ -12,7 +12,7 @@ app.post("/update", (req, res) => {
   console.log("Webhook received!");
   
   // Chỉ định đường dẫn đến thư mục repository
-  const repoPath = `${process.cwd()}/bot2`; // hoặc đường dẫn cụ thể đến repository
+  const repoPath = process.cwd(); // hoặc đường dẫn cụ thể đến repository
   
   // In ra đường dẫn hiện tại để debug
   console.log(`Current directory: ${repoPath}`);
