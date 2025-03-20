@@ -1,6 +1,5 @@
 const express = require("express");
 const { exec } = require("child_process");
-
 const app = express();
 app.use(express.json());
 
@@ -18,8 +17,8 @@ app.post("/update", (req, res) => {
   // In ra đường dẫn hiện tại để debug
   console.log(`Current directory: ${repoPath}`);
   
-  // Thực hiện lệnh pull với đường dẫn đầy đủ
-  exec(`cd ${repoPath} && git pull`, (error, stdout, stderr) => {
+  // Thực hiện lệnh pull với remote và branch cụ thể
+  exec(`cd ${repoPath} && git pull origin main`, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error: ${error.message}`);
       console.error(`Stderr: ${stderr}`);
@@ -32,7 +31,7 @@ app.post("/update", (req, res) => {
     if (stderr) {
       console.log(`Git stderr (may be warnings): ${stderr}`);
     }
-
+    
     // Restart bot (Replit sẽ tự restart khi process bị kill)
     exec("kill 1", (err, out, serr) => {
       if (err) {
@@ -44,5 +43,6 @@ app.post("/update", (req, res) => {
     });
   });
 });
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Webhook server running on port ${PORT}`));
