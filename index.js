@@ -131,6 +131,9 @@ client.on('messageCreate', async message => {
     case 'campuchia':
       campuchia(message);
       break;
+    case 'test':
+      message.reply('tôi còn sống!');
+      break;
     case 'ai':
       if (!args.length) return message.reply('Bạn cần nhập nội dung để gọi AI.');
       try {
