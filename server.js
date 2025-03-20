@@ -27,8 +27,7 @@ app.post("/update", (req, res) => {
       git config user.email "bot@example.com" &&
       git config user.name "Replit Bot" &&
       git config pull.rebase false &&
-      git pull origin main --no-edit --allow-unrelated-histories --verbose &&
-      touch .replit && refresh
+      git pull origin main --no-edit --allow-unrelated-histories --verbose
     `;
     
     console.log("Executing Git commands...");
