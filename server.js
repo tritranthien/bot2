@@ -17,8 +17,16 @@ app.post("/update", (req, res) => {
   // In ra đường dẫn hiện tại để debug
   console.log(`Current directory: ${repoPath}`);
   
-  // Thực hiện lệnh pull với remote và branch cụ thể
-  exec(`cd ${repoPath} && git pull origin main`, (error, stdout, stderr) => {
+  // Chuỗi các lệnh git để xử lý nhánh phân kỳ
+  // 1. Đặt chiến lược merge
+  // 2. Thực hiện pull với strategy-option được chỉ định
+  const gitCommands = `
+    cd ${repoPath} &&
+    git config pull.rebase false &&
+    git pull origin main --no-edit
+  `;
+  
+  exec(gitCommands, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error: ${error.message}`);
       console.error(`Stderr: ${stderr}`);
