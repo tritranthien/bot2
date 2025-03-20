@@ -17,9 +17,11 @@ app.post("/update", (req, res) => {
   // In ra đường dẫn hiện tại để debug
   console.log(`Current directory: ${repoPath}`);
   
-  // Chuỗi các lệnh git với thêm tùy chọn --allow-unrelated-histories
+  // Chuỗi các lệnh git với thêm thiết lập thông tin người dùng
   const gitCommands = `
     cd ${repoPath} &&
+    git config user.email "bot@example.com" &&
+    git config user.name "Replit Bot" &&
     git config pull.rebase false &&
     git pull origin main --no-edit --allow-unrelated-histories
   `;
