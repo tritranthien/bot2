@@ -33,7 +33,7 @@ const SON_ID = '1349637201666768898';
 const CAMGIF = 'a:campuchigif:1352142676056735764';
 // Đối tượng lưu trữ cảnh cáo tạm thời
 const warnings = new Collection();
-
+let blame = false;
 // Khởi động bot
 client.once('ready', () => {
   console.log(`Bot đã sẵn sàng! Đăng nhập với tên ${client.user.tag}`);
@@ -77,6 +77,14 @@ client.once('ready', () => {
 // Xử lý tin nhắn
 client.on('messageCreate', async message => {
   // Bỏ qua tin nhắn từ bot và tin nhắn không bắt đầu bằng prefix
+  if (message.author.id === SON_ID && blame) {
+    if (message.content.startsWith(config.prefix)) {
+      message.channel.send(`Mày còn dám ra lệnh cho tao nữa à?. <${CAMGIF}> rẹt rẹt ....`);
+    } else {
+      message.channel.send(`Mày nín ........`);
+    }
+    return;
+  }
   if (message.author.bot || !message.content.startsWith(config.prefix)) return;
   
   const args = message.content.slice(config.prefix.length).trim().split(/ +/);
@@ -178,6 +186,14 @@ client.on('messageCreate', async message => {
       message.channel.bulkDelete(botMessages, true).catch(err => console.error(err));
       message.channel.send('Đã xóa tất cả tin nhắn của bot!').then(msg => setTimeout(() => msg.delete(), 3000));
       break;
+    case 'blameon':
+      blame = true;
+      message.channel.send('Đã bật chế độ vả mõm thằng Sơn!');
+      break;
+    case 'blameoff':
+      blame = false;
+      message.channel.send('Đã tắt chế độ vả mõm thằng Sơn!');
+      break;
   }
 });
 
@@ -215,6 +231,8 @@ async function sendHelpMessage(message) {
 \`${config.prefix}ai [content]\` - Gọi AI
 \`${config.prefix}clear\` - Xóa tất cả tin nhắn của bot
 \`${config.prefix}test\` - tôi vẫn còn sống.
+\`${config.prefix}blameon\` - Nhảy vào họng thằng Sơn.
+\`${config.prefix}blameoff\` - Thoát khỏi họng thằng Sơn.
 `;
   message.channel.send(helpText);
 }
