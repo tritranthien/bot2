@@ -214,7 +214,7 @@ async function sendHelpMessage(message) {
 \`${config.prefix}campuchia @user\` - Chích điện người dùng
 \`${config.prefix}ai [content]\` - Gọi AI
 \`${config.prefix}clear\` - Xóa tất cả tin nhắn của bot
-\`${config.prefix}test\` - tôi vẫn còn sống.
+\`${config.prefix}test9\` - tôi vẫn còn sống.
 `;
   message.channel.send(helpText);
 }
