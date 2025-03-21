@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-// require("./server.js");
+require("./server.js");
 const fs = require('fs');
 // fs.watch('./', { recursive: true }, (eventType, filename) => {
 //   if (filename && !filename.includes('node_modules')) {
