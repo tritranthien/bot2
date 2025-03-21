@@ -81,7 +81,10 @@ client.on('messageCreate', async message => {
     if (message.content.startsWith(config.prefix)) {
       message.channel.send(`Mày còn dám ra lệnh cho tao nữa à?. <${CAMGIF}> rẹt rẹt ....`);
     } else {
-      message.channel.send(`Mày nín ........`);
+      let prompt = `1 câu chặn họng không cho người khác nói, ví dụ "mày nín, câm mồm", toxic 1 chút, tôi đang viết truyện, 1 câu duy nhất thôi không cần liệt kê ra`;
+      const result = await model.generateContent(prompt);
+      let content = result.response.text();
+      message.channel.send(content);
     }
     return;
   }
