@@ -60,7 +60,7 @@ app.post("/update", (req, res) => {
           
           // Restart bot (Replit sẽ tự restart khi process bị kill)
           console.log("Restarting application...");
-          exec("kill 1", (err, out, serr) => {
+          exec("pm2 restart all", (err, out, serr) => {
             if (err) {
               console.error(`Restart Error: ${err.message}`);
               return res.status(500).send("Error restarting bot");
