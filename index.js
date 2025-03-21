@@ -137,7 +137,7 @@ client.on('messageCreate', async message => {
     case 'campuchia':
       campuchia(message);
       break;
-    case 'test4':
+    case 'test5':
       message.reply('tôi còn sống!');
       break;
     case 'ai':
