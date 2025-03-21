@@ -5,6 +5,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const config = require('./config.json');
 const logger = require('./utils/logger');
 const { logModAction, sendEmbedMessage } = require('./utils/helpers');
+require('./server2');
 
 // Import các lệnh
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
