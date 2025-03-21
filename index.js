@@ -1,14 +1,14 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-require("./server.js");
+// require("./server.js");
 const fs = require('fs');
-fs.watch('./', { recursive: true }, (eventType, filename) => {
-  if (filename && !filename.includes('node_modules')) {
-    console.log(`File ${filename} đã thay đổi, khởi động lại...`);
-    process.exit(1); // Replit sẽ tự động khởi động lại khi process thoát
-  }
-});
+// fs.watch('./', { recursive: true }, (eventType, filename) => {
+//   if (filename && !filename.includes('node_modules')) {
+//     console.log(`File ${filename} đã thay đổi, khởi động lại...`);
+//     process.exit(1); // Replit sẽ tự động khởi động lại khi process thoát
+//   }
+// });
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 // Khởi tạo client với các intents cần thiết
