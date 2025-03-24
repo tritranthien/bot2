@@ -6,6 +6,7 @@ const config = require('./config.json');
 const logger = require('./utils/logger');
 const { logModAction, sendEmbedMessage } = require('./utils/helpers');
 require('./server2');
+const dbHandler = require('./utils/database');
 
 // Import các lệnh
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -33,7 +34,8 @@ client.warnings = new Collection();
 client.once('ready', () => {
   logger.log(`Bot đã sẵn sàng! Đăng nhập với tên ${client.user.tag}`);
   client.user.setActivity('!help để xem lệnh', { type: 'WATCHING' });
-
+  // Khởi tạo database
+  dbHandler.initDb();
   // Đảm bảo mỗi server có role Muted
   client.guilds.cache.forEach(guild => {
     let mutedRole = guild.roles.cache.find(role => role.name === config.mutedRole);
@@ -104,3 +106,13 @@ client.on('guildMemberRemove', member => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+process.on('SIGINT', () => {
+  logger.log('Bot đang tắt...');
+  dbHandler.closeDb();
+  process.exit(0);
+});
+process.on('SIGTERM', () => {
+  logger.log('Bot đang tắt...');
+  dbHandler.closeDb();
+  process.exit(0);
+});
