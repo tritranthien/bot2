@@ -1,5 +1,5 @@
 const db = require('../utils/database.js');
-const logger = require('../utils/logger');
+require('../utils/logger');
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
@@ -53,7 +53,7 @@ module.exports = {
             message.reply(`Đã xóa lịch sử chat ${chatId} thành công.`);
     
         } catch (error) {
-            logger.error(`Lỗi khi xóa lịch sử global chat: ${error.message}`);
+           console.error(`Lỗi khi xóa lịch sử global chat: ${error.message}`);
             message.reply('Có lỗi xảy ra khi xóa lịch sử chat.');
         }
     },
@@ -86,7 +86,7 @@ module.exports = {
             await message.channel.send({ embeds: [embed] });
             
         } catch (error) {
-            logger.error(`Lỗi khi xem danh sách chat: ${error.message}`);
+           console.error(`Lỗi khi xem danh sách chat: ${error.message}`);
             message.reply('Có lỗi xảy ra khi lấy danh sách chat.');
         }
     },
@@ -96,7 +96,7 @@ module.exports = {
             const newChat = await db.createNewGlobalChat();
             message.reply(`Đã tạo cuộc trò chuyện mới. Chat ID của bạn là: **${newChat.chatId}**`);
         } catch (error) {
-            logger.error(`Lỗi khi tạo chat mới: ${error.message}`);
+           console.error(`Lỗi khi tạo chat mới: ${error.message}`);
             message.reply('Có lỗi xảy ra khi tạo chat mới.');
         }
     },
@@ -136,7 +136,7 @@ module.exports = {
             message.reply(`Đã chuyển đến chat ${chatId}. Bạn có thể tiếp tục trò chuyện.`);
             
         } catch (error) {
-            logger.error(`Lỗi khi tiếp tục chat: ${error.message}`);
+           console.error(`Lỗi khi tiếp tục chat: ${error.message}`);
             message.reply('Có lỗi xảy ra khi tiếp tục chat.');
         }
     },
@@ -193,7 +193,7 @@ module.exports = {
             await sendEmbedMessage(message.channel, message.author, content);
             
         } catch (error) {
-            logger.error(`Lỗi trong chat toàn cục: ${error.message}`);
+           console.error(`Lỗi trong chat toàn cục: ${error.message}`);
             message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
         }
     },
@@ -227,7 +227,7 @@ module.exports = {
             await message.channel.send({ embeds: [embed] });
             
         } catch (error) {
-            logger.error(`Lỗi khi xem danh sách chat: ${error.message}`);
+           console.error(`Lỗi khi xem danh sách chat: ${error.message}`);
             message.reply('Có lỗi xảy ra khi lấy danh sách chat.');
         }
     },

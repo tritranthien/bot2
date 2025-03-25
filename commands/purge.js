@@ -9,8 +9,8 @@ module.exports = {
         }
 
         const amount = parseInt(args[0]) + 1;
-        if (isNaN(amount) || amount <= 1 || amount > 1001) {
-            return message.reply('Vui lòng nhập số lượng tin nhắn hợp lệ (1-1000).');
+        if (isNaN(amount) || amount <= 1 || amount > 100) {
+            return message.reply('Vui lòng nhập số lượng tin nhắn hợp lệ (1-99).');
         }
 
         try {

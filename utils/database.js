@@ -68,7 +68,7 @@ function initDb() {
         client.query(queries, (err) => {
             release();
             if (err) {
-                logger.error('Lỗi khởi tạo cơ sở dữ liệu', err);
+                console.error('Lỗi khởi tạo cơ sở dữ liệu', err);
             } else {
                 console.log('Đã khởi tạo cơ sở dữ liệu');
             }
@@ -123,7 +123,7 @@ async function createNewChat(userId) {
             [userId, sequence, chatId, `Cuộc trò chuyện ${sequence}`]
         );
 
-        logger.log(`Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${result.rows[0].id})`);
+        console.log(`Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${result.rows[0].id})`);
 
         return {
             id: result.rows[0].id,
@@ -448,10 +448,10 @@ async function summarizeAndUpdateChatTitle(userId, model) {
         // Cập nhật tiêu đề
         await updateChatTitle(currentChat.id, title);
 
-        logger.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
+        console.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
 
     } catch (error) {
-        logger.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
+        console.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
     } finally {
         client.release();
     }
@@ -499,7 +499,7 @@ async function createNewGlobalChat() {
         const sequence = sequenceResult.rows[0].next_sequence;
         const chatId = `g${sequence}`;
         
-        logger.log(`Đã tạo global chat mới: ${chatId}`);
+        console.log(`Đã tạo global chat mới: ${chatId}`);
         
         return {
             chatId: chatId,

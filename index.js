@@ -7,14 +7,18 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const config = require('./config.json');
 const { logModAction, sendEmbedMessage } = require('./utils/helpers');
 const dbHandler = require('./utils/database');
-const { scheduleNextMessage, sendScheduledMessage } = require('./utils/schedule');
+const { scheduleNextMessage } = require('./utils/schedule');
 
 // Import các lệnh
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('./commands')
+  .filter(file => file.endsWith('.js') && !file.startsWith('_'));
+
 const commands = new Collection();
+
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   commands.set(command.name, command);
+  console.log(`✅ Loaded command: ${command.name}`);
 }
 
 // Khởi tạo client và AI

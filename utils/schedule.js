@@ -1,4 +1,4 @@
-const logger = require('../utils/logger');
+require('../utils/logger');
 
 // Constant configurations
 const SEND_HOURS = [8, 10, 12, 14, 16, 18];
