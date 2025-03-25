@@ -9,20 +9,6 @@ const { logModAction, sendEmbedMessage } = require('./utils/helpers');
 const dbHandler = require('./utils/database');
 const { scheduleNextMessage } = require('./utils/schedule');
 
-// Import các lệnh
-const commandFiles = fs.readdirSync('./commands')
-  .filter(file => file.endsWith('.js') && !file.startsWith('_'));
-
-const commands = new Collection();
-
-for (const file of commandFiles) {
-  const filePath = `./commands/${file}`;
-  delete require.cache[require.resolve(filePath)];
-  const command = require(filePath);
-  commands.set(command.name, command);
-  console.log(`✅ Loaded command: ${command.name}`);
-}
-
 // Khởi tạo client và AI
 const client = new Client({
   intents: [
@@ -39,7 +25,7 @@ client.warnings = new Collection();
 
 // Khởi động bot
 client.once('ready', () => {
-  console.log(`Bot đã sẵn sàng! Đăng nhập với tên ${client.user.tag}`);
+  console.log(`🤖 Bot đã sẵn sàng! Đăng nhập với tên ${client.user.tag}`);
   client.user.setActivity('!help để xem lệnh', { type: 'WATCHING' });
   // Khởi tạo database
   dbHandler.initDb();
@@ -68,6 +54,20 @@ client.once('ready', () => {
   });
   scheduleNextMessage(client, config);
 });
+
+// Import các lệnh
+const commandFiles = fs.readdirSync('./commands')
+  .filter(file => file.endsWith('.js') && !file.startsWith('_'));
+
+const commands = new Collection();
+
+for (const file of commandFiles) {
+  const filePath = `./commands/${file}`;
+  delete require.cache[require.resolve(filePath)];
+  const command = require(filePath);
+  commands.set(command.name, command);
+  console.log(`✅ Loaded command: ${command.name}`);
+}
 
 // Xử lý tin nhắn
 client.on('messageCreate', async (message) => {
