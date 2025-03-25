@@ -5,12 +5,11 @@ if (process.env.APP_ENV == 'local') {
 } else {
     const db = require('../utils/database.js');
 }
-const logger = require('../utils/logger');
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'gai',
-    description: 'Trò chuyện AI trong chat toàn cục với các cuộc trò chuyện riêng biệt',
+    description: 'Trò chuyện AI trong chat toàn cục với các cuộc trò chuyện riêng biệt 🤖',
     
     async execute(message, args, config, logModAction, sendEmbedMessage, client, model) {
         const subCommand = args[0] ? args[0].toLowerCase() : null;
@@ -37,12 +36,12 @@ module.exports = {
             if (!chatId) {
                 // Xóa toàn bộ lịch sử
                 await db.deleteGlobalChatHistory();
-                return message.reply('Đã xóa toàn bộ lịch sử chat toàn cục.');
+                return message.reply('Đã xóa toàn bộ lịch sử chat toàn cục. 🗑️');
             }
     
             // Kiểm tra định dạng chatId
             if (!chatId.startsWith('g')) {
-                return message.reply('Chat ID không hợp lệ. Vui lòng sử dụng định dạng gx (ví dụ: g1, g2).');
+                return message.reply('❌ Chat ID không hợp lệ. Vui lòng sử dụng định dạng gx (ví dụ: g1, g2).');
             }
     
             // Kiểm tra chatId có tồn tại
@@ -50,17 +49,17 @@ module.exports = {
             const existingChat = chatList.find(chat => chat.chatId === chatId);
     
             if (!existingChat) {
-                return message.reply(`Không tìm thấy cuộc trò chuyện ${chatId}.`);
+                return message.reply(`Không tìm thấy cuộc trò chuyện ${chatId}. 🙈`);
             }
     
             // Xóa lịch sử chat cụ thể
             await db.deleteGlobalChatHistory(chatId);
     
-            message.reply(`Đã xóa lịch sử chat ${chatId} thành công.`);
+            message.reply(`✅ Đã xóa lịch sử chat ${chatId} thành công.`);
     
         } catch (error) {
-           console.error(`Lỗi khi xóa lịch sử global chat: ${error.message}`);
-            message.reply('Có lỗi xảy ra khi xóa lịch sử chat.');
+           console.error(`❌ Lỗi khi xóa lịch sử global chat: ${error.message}`);
+            message.reply('❌ Có lỗi xảy ra khi xóa lịch sử chat.');
         }
     },
     async showGlobalChatList(message) {
@@ -68,7 +67,7 @@ module.exports = {
             const chatList = await db.getGlobalChatList();
             
             if (chatList.length === 0) {
-                return message.reply('Chưa có cuộc trò chuyện nào.');
+                return message.reply('Chưa có cuộc trò chuyện nào. 🪹');
             }
             
             const embed = new EmbedBuilder()
@@ -92,31 +91,31 @@ module.exports = {
             await message.channel.send({ embeds: [embed] });
             
         } catch (error) {
-           console.error(`Lỗi khi xem danh sách chat: ${error.message}`);
-            message.reply('Có lỗi xảy ra khi lấy danh sách chat.');
+           console.error(`❌ Lỗi khi xem danh sách chat: ${error.message}`);
+            message.reply('❌ Có lỗi xảy ra khi lấy danh sách chat.');
         }
     },
 
     async startNewGlobalChat(message) {
         try {
             const newChat = await db.createNewGlobalChat();
-            message.reply(`Đã tạo cuộc trò chuyện mới. Chat ID của bạn là: **${newChat.chatId}**`);
+            message.reply(`✅ Đã tạo cuộc trò chuyện mới. Chat ID của bạn là: **${newChat.chatId}** 💬`);
         } catch (error) {
-           console.error(`Lỗi khi tạo chat mới: ${error.message}`);
-            message.reply('Có lỗi xảy ra khi tạo chat mới.');
+           console.error(`❌ Lỗi khi tạo chat mới: ${error.message}`);
+            message.reply('❌ Có lỗi xảy ra khi tạo chat mới.');
         }
     },
 
     async continueGlobalChat(message, chatId) {
         if (!chatId || !chatId.startsWith('g')) {
-            return message.reply('Vui lòng cung cấp Chat ID hợp lệ (ví dụ: g1, g2).');
+            return message.reply('💁 Vui lòng cung cấp Chat ID hợp lệ (ví dụ: g1, g2).');
         }
 
         try {
             const messages = await db.getGlobalChatMessages(chatId, 5);
             
             if (messages.length === 0) {
-                return message.reply(`Không tìm thấy tin nhắn trong chat ${chatId}.`);
+                return message.reply(`Không tìm thấy tin nhắn trong chat ${chatId}. 🙈`);
             }
             
             const embed = new EmbedBuilder()

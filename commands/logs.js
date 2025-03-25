@@ -3,7 +3,7 @@ const path = require("path");
 
 module.exports = {
     name: "logs",
-    description: "Lấy file log mới nhất",
+    description: "Lấy file log mới nhất từ thư mục logs 📝",
     async execute(message, args, config) {
         const logFilePath = path.join(__dirname, "../logs/app.log");
 

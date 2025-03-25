@@ -8,14 +8,14 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server đang chạy trên port ${PORT}`);
+  console.log(`🖥️ Server đang chạy trên port: ${PORT}`);
 });
 function keepAlive() {
   const url = 'https://bot2-dmw7.onrender.com/';
   
   fetch(url)
-    .then(res => console.log(`Ping thành công lúc: ${new Date().toISOString()}`))
-    .catch(err => console.error(`Ping thất bại: ${err}`));
+    .then(res => console.log(`✅ Ping thành công lúc: ${new Date().toISOString()}`))
+    .catch(err => console.error(`❌ Ping thất bại: ${err}`));
 }
 
 setInterval(keepAlive, 12 * 60 * 1000);

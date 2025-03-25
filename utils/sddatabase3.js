@@ -7,10 +7,10 @@ require('./logger');
 const dbPath = path.join(__dirname, '../data/bot.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
-        console.error(`Lỗi kết nối database: ${err.message}`);
+        console.error(`❌ Lỗi kết nối database: ${err.message}`);
         return;
     }
-    console.log('Đã kết nối tới SQLite database.');
+    console.log('✅ Đã kết nối tới SQLite database.');
 });
 
 function initDb() {
@@ -52,7 +52,7 @@ function initDb() {
             chat_id INTEGER NOT NULL
         )`);
         
-        console.log('Đã khởi tạo cơ sở dữ liệu');
+        console.log('✅ Đã khởi tạo cơ sở dữ liệu');
     });
 }
 
@@ -121,7 +121,7 @@ async function createNewChat(userId) {
                     sequence: sequence
                 });
                 
-                console.log(`Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${this.lastID})`);
+                console.log(`💬 Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${this.lastID})`);
             });
         } catch (error) {
             reject(error);
