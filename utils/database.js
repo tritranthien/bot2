@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const logger = require('./logger');
+require('./logger');
 
 // Cấu hình kết nối PostgreSQL
 const pool = new Pool({
@@ -11,13 +11,13 @@ const pool = new Pool({
 
 // Xử lý lỗi kết nối
 pool.on('error', (err) => {
-    logger.error('Unexpected error on idle client', err);
+    console.error('Unexpected error on idle client', err);
 });
 
 function initDb() {
     pool.connect((err, client, release) => {
         if (err) {
-            logger.error(`Lỗi kết nối database: ${err.message}`);
+            console.error(`Lỗi kết nối database: ${err.message}`);
             return;
         }
 
@@ -69,9 +69,8 @@ function initDb() {
             release();
             if (err) {
                 logger.error('Lỗi khởi tạo cơ sở dữ liệu', err);
-                console.log('Lỗi khởi tạo cơ sở dữ liệu:', err);
             } else {
-                logger.log('Đã khởi tạo cơ sở dữ liệu');
+                console.log('Đã khởi tạo cơ sở dữ liệu');
             }
         });
     });
@@ -111,8 +110,10 @@ async function createNewChat(userId) {
         // Lấy sequence tiếp theo
         const sequence = await getNextSequence(userId);
 
+
         // Tạo chat_id theo định dạng "a{sequence}"
         const chatId = `a${sequence}`;
+
 
         // Thêm cuộc trò chuyện mới vào database
         const result = await client.query(
@@ -195,7 +196,7 @@ async function deleteUserChatHistory(userId) {
         // Commit transaction
         await client.query('COMMIT');
 
-        logger.log(`Đã xóa ${result.rowCount} cuộc trò chuyện và reset sequence của người dùng ${userId}`);
+        console.log(`Đã xóa ${result.rowCount} cuộc trò chuyện và reset sequence của người dùng ${userId}`);
 
         return {
             messagesDeleted: result.rowCount > 0,
@@ -204,7 +205,7 @@ async function deleteUserChatHistory(userId) {
     } catch (error) {
         // Rollback transaction nếu có lỗi
         await client.query('ROLLBACK');
-        logger.error(`Lỗi khi xóa lịch sử trò chuyện: ${error.message}`);
+        console.error(`Lỗi khi xóa lịch sử trò chuyện: ${error.message}`);
         throw error;
     } finally {
         client.release();
@@ -244,7 +245,7 @@ async function deleteChatById(userId, chatId) {
         // Commit transaction
         await client.query('COMMIT');
 
-        logger.log(`Đã xóa cuộc trò chuyện ${chatId} của người dùng ${userId}`);
+        console.log(`Đã xóa cuộc trò chuyện ${chatId} của người dùng ${userId}`);
 
         return {
             success: true,
@@ -253,7 +254,7 @@ async function deleteChatById(userId, chatId) {
     } catch (error) {
         // Rollback transaction nếu có lỗi
         await client.query('ROLLBACK');
-        logger.error(`Lỗi khi xóa cuộc trò chuyện: ${error.message}`);
+        console.error(`Lỗi khi xóa cuộc trò chuyện: ${error.message}`);
         throw error;
     } finally {
         client.release();
@@ -366,7 +367,7 @@ async function updateChatTime(userId, chatId) {
             'UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2',
             [chatId, userId]
         );
-        logger.log(`Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId} của người dùng ${userId}`);
+        console.log(`Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId} của người dùng ${userId}`);
         return true;
     } finally {
         client.release();
@@ -394,9 +395,9 @@ async function getMessagesFromChat(chatDbId, limit = 10) {
 // Đóng kết nối database
 function closeDb() {
     pool.end().then(() => {
-        logger.log('Đã đóng kết nối database.');
+        console.log('Đã đóng kết nối database.');
     }).catch(err => {
-        logger.error(`Lỗi đóng database: ${err.message}`);
+        console.error(`Lỗi đóng database: ${err.message}`);
     });
 }
 
@@ -406,6 +407,7 @@ async function summarizeAndUpdateChatTitle(userId, model) {
     try {
         // Lấy cuộc trò chuyện hiện tại của người dùng
         const currentChat = await getCurrentChat(userId);
+
 
         // Lấy một số tin nhắn gần đây để tóm tắt
         const messagesResult = await client.query(
@@ -419,23 +421,29 @@ async function summarizeAndUpdateChatTitle(userId, model) {
             return;
         }
 
+
         // Tạo context cho AI
         let context = messages.map(msg => `${msg.role === 'user' ? 'Người dùng' : 'AI'}: ${msg.content}`).reverse().join('\n');
+
 
         // Prompt để tóm tắt
         const prompt = `Dựa vào đoạn hội thoại sau, hãy tạo một tiêu đề ngắn gọn (dưới 50 ký tự) cho cuộc trò chuyện này:\n\n${context}\n\nTiêu đề:`;
 
+
         // Gọi AI để tóm tắt
         const result = await model.generateContent(prompt);
         let title = result.response.text().trim();
+
 
         // Đảm bảo tiêu đề không quá dài
         if (title.length > 50) {
             title = title.substring(0, 47) + '...';
         }
 
+
         // Thêm chat_id vào tiêu đề
         title = `[${currentChat.chat_id}] ${title}`;
+
 
         // Cập nhật tiêu đề
         await updateChatTitle(currentChat.id, title);

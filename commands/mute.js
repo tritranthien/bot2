@@ -1,4 +1,6 @@
 // commands/mute.js
+require('../utils/logger');
+
 module.exports = {
     name: 'mute',
     description: 'Mute a user in the server.',

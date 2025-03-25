@@ -1,4 +1,6 @@
 // commands/unmute.js
+require('../utils/logger');
+
 module.exports = {
     name: 'unmute',
     description: 'Unmute a user in the server.',

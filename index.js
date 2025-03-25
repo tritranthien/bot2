@@ -1,11 +1,11 @@
 require('dotenv').config();
+require('./utils/logger');
+require('./server2');
 const fs = require('fs');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const config = require('./config.json');
-const logger = require('./utils/logger');
 const { logModAction, sendEmbedMessage } = require('./utils/helpers');
-require('./server2');
 const dbHandler = require('./utils/database');
 const { scheduleNextMessage, sendScheduledMessage } = require('./utils/schedule');
 
@@ -33,7 +33,7 @@ client.warnings = new Collection();
 
 // Khởi động bot
 client.once('ready', () => {
-  logger.log(`Bot đã sẵn sàng! Đăng nhập với tên ${client.user.tag}`);
+  console.log(`Bot đã sẵn sàng! Đăng nhập với tên ${client.user.tag}`);
   client.user.setActivity('!help để xem lệnh', { type: 'WATCHING' });
   // Khởi tạo database
   dbHandler.initDb();
@@ -46,7 +46,7 @@ client.once('ready', () => {
           name: config.mutedRole,
           permissions: [],
         }).then(role => {
-          logger.log(`Đã tạo role ${role.name} cho server ${guild.name}`);
+          console.log(`Đã tạo role ${role.name} cho server ${guild.name}`);
           guild.channels.cache.forEach(channel => {
             channel.permissionOverwrites.create(role, {
               SendMessages: false,
@@ -56,7 +56,7 @@ client.once('ready', () => {
           });
         });
       } catch (error) {
-        logger.error(`Không thể tạo role Muted cho server ${guild.name}: ${error}`);
+        console.error(`Không thể tạo role Muted cho server ${guild.name}: ${error}`);
       }
     }
   });
@@ -76,7 +76,7 @@ client.on('messageCreate', async (message) => {
   try {
     await command.execute(message, args, config, logModAction, sendEmbedMessage, client, model);
   } catch (error) {
-    logger.error(error);
+    console.error(error);
     message.reply('Có lỗi xảy ra khi thực hiện lệnh.');
   }
 });
@@ -99,12 +99,12 @@ client.on('guildMemberRemove', member => {
 
 client.login(process.env.DISCORD_TOKEN);
 process.on('SIGINT', () => {
-  logger.log('Bot đang tắt...');
+  console.log('Bot đang tắt...');
   dbHandler.closeDb();
   process.exit(0);
 });
 process.on('SIGTERM', () => {
-  logger.log('Bot đang tắt...');
+  console.log('Bot đang tắt...');
   dbHandler.closeDb();
   process.exit(0);
 });

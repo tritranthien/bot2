@@ -1,6 +1,6 @@
 // commands/ai.js
-const db = require('../utils/database.js');
-const logger = require('../utils/logger');
+const db = require('../utils/database');
+require('../utils/logger');
 
 module.exports = {
     name: 'ai',
@@ -32,7 +32,7 @@ module.exports = {
                 parts: [{ text: row.content }]
             }));
             
-            logger.log(`Lịch sử cuộc trò chuyện của ${userId}: ${JSON.stringify(conversation)}`);
+            console.log(`Lịch sử cuộc trò chuyện của ${userId}: ${JSON.stringify(conversation)}`);
             
             // Kiểm tra xem lịch sử có trống không
             if (conversation.length === 0) {
@@ -60,7 +60,7 @@ module.exports = {
                     //     await message.delete();
                     // }
                 } catch (error) {
-                    logger.error(`Lỗi khi gọi generateContent: ${error.message}`);
+                    console.error(`Lỗi khi gọi generateContent: ${error.message}`);
                     // Xóa thông báo đang xử lý
                     await processingMsg.delete();
                     message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
@@ -103,7 +103,7 @@ module.exports = {
                 //     await message.delete();
                 // }
             } catch (error) {
-                logger.error(`Lỗi khi gọi startChat: ${error.message}`);
+                console.error(`Lỗi khi gọi startChat: ${error.message}`);
                 // Xóa thông báo đang xử lý
                 await processingMsg.delete();
                 
@@ -129,12 +129,12 @@ module.exports = {
                     // Gửi câu trả lời cho người dùng
                     await sendEmbedMessage(message.channel, message.author, content);
                 } catch (fallbackError) {
-                    logger.error(`Lỗi khi thử lại với generateContent: ${fallbackError.message}`);
+                    console.error(`Lỗi khi thử lại với generateContent: ${fallbackError.message}`);
                     message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
                 }
             }
         } catch (error) {
-            logger.error(`Lỗi chung khi gọi AI: ${error.message}`);
+            console.error(`Lỗi chung khi gọi AI: ${error.message}`);
             message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
         }
     },

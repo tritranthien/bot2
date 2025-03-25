@@ -1,4 +1,5 @@
 // commands/purge.js
+require('../utils/logger');
 module.exports = {
     name: 'purge',
     description: 'Purge messages in the channel.',

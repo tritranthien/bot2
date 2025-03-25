@@ -1,6 +1,6 @@
 // commands/chats.js
 const db = require('../utils/database');
-const logger = require('../utils/logger');
+require('../utils/logger');
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
@@ -50,7 +50,7 @@ module.exports = {
             await message.channel.send({ embeds: [embed] });
             
         } catch (error) {
-            logger.error(`Lỗi khi lấy danh sách cuộc trò chuyện: ${error.message}`);
+            console.error(`Lỗi khi lấy danh sách cuộc trò chuyện: ${error.message}`);
             message.reply('Có lỗi xảy ra khi lấy danh sách cuộc trò chuyện. Vui lòng thử lại sau.');
         }
     },
