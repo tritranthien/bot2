@@ -1,7 +1,7 @@
 # 🤖 Discord Bot
 
 ## 📌 Giới thiệu
-Đây là một bot Discord được xây dựng bằng **discord.js**, sử dụng **Node.js** và có thể tích hợp với **Google Generative AI**. Bot hỗ trợ các tính năng như xử lý lệnh, kết nối cơ sở dữ liệu, và các tiện ích khác (**Chích điện**).
+Đây là một bot Discord được xây dựng bằng **discord.js**, sử dụng **Node.js** và có thể tích hợp với **AI**. Bot hỗ trợ các tính năng như xử lý lệnh, kết nối cơ sở dữ liệu, và các tiện ích khác (**Chích điện**).
 
 ## 🛠 Công nghệ sử dụng
 - [Node.js](https://nodejs.org/) – Môi trường chạy JavaScript
@@ -44,7 +44,7 @@ npm start
 ## 🚀 Tính năng chính
 - 🤖 Tương tác với Discord bằng lệnh
 - 🛠 Kết nối cơ sở dữ liệu
-- 🔥 Hỗ trợ Google Generative AI
+- 🔥 Hỗ trợ AI
 - ⚡ Chích điện
 
 
