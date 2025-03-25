@@ -54,7 +54,6 @@ function initDb() {
             CREATE TABLE IF NOT EXISTS global_chats (
                 id SERIAL PRIMARY KEY,
                 chat_sequence INTEGER NOT NULL,
-                user_id TEXT DEFAULT global,
                 chat_id TEXT NOT NULL,
                 creator_id TEXT NOT NULL,
                 title TEXT,
@@ -582,6 +581,7 @@ async function summarizeAndUpdateChatTitle(userId, model) {
     }
 }
 async function getCurrentGlobalChat(userId) {
+    const client = await pool.connect();
     try {
         const result = await client.query(
             `SELECT id, chat_id FROM global_chats 
@@ -650,7 +650,7 @@ async function summarizeAndUpdateGlobalChatTitle(userId, model) {
         console.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
 
     } catch (error) {
-        logger.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
+        console.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
     } finally {
         client.release();
     }
@@ -737,21 +737,6 @@ async function getGlobalChatMessages(chatId, limit = 10) {
 
         // Đảo ngược để có thứ tự thời gian đúng
         return result.rows.reverse();
-    } finally {
-        client.release();
-    }
-}
-
-async function addGlobalChatMessage(userId, role, content, chatSequence) {
-    const client = await pool.connect();
-    try {
-        const result = await client.query(
-            `INSERT INTO global_chats (chat_sequence, user_id, role, content) 
-             VALUES ($1, $2, $3, $4)
-             RETURNING id`,
-            [chatSequence, userId, role, content]
-        );
-        return result.rows[0].id;
     } finally {
         client.release();
     }
