@@ -1,1 +1,54 @@
-[ERROR] 2025-03-25T05:17:27.121Z Lỗi khởi tạo cơ sở dữ liệu {"length":103,"name":"error","severity":"ERROR","code":"42703","file":"indexcmds.c","line":"1891","routine":"ComputeIndexAttrs"}
+[INFO] 2025-03-25T07:24:54.514Z ✅ Loaded command: ai
+[INFO] 2025-03-25T07:24:54.518Z ✅ Loaded command: campuchia
+[INFO] 2025-03-25T07:24:54.519Z ✅ Loaded command: chats
+[INFO] 2025-03-25T07:24:54.519Z ✅ Loaded command: clear
+[INFO] 2025-03-25T07:24:54.520Z ✅ Loaded command: clearlog
+[INFO] 2025-03-25T07:24:54.522Z ✅ Loaded command: continuechat
+[INFO] 2025-03-25T07:24:54.523Z ✅ Loaded command: gai
+[INFO] 2025-03-25T07:24:54.524Z ✅ Loaded command: help
+[INFO] 2025-03-25T07:24:54.521Z ✅ Loaded command: clearai
+[INFO] 2025-03-25T07:24:54.526Z ✅ Loaded command: logs
+[INFO] 2025-03-25T07:24:54.527Z ✅ Loaded command: newchat
+[INFO] 2025-03-25T07:24:54.528Z ✅ Loaded command: purge
+[INFO] 2025-03-25T07:24:54.529Z ✅ Loaded command: run
+[INFO] 2025-03-25T07:24:54.574Z Server đang chạy trên port 3000
+[INFO] 2025-03-25T07:24:54.525Z ✅ Loaded command: info
+[INFO] 2025-03-25T07:24:55.766Z Bot đã sẵn sàng! Đăng nhập với tên luuluanbot#3009
+[INFO] 2025-03-25T07:24:55.769Z Lần chích điện ⚡⚡ tiếp theo vào 16:00 (95 phút nữa 🤗)
+[ERROR] 2025-03-25T07:24:56.224Z Lỗi kết nối database: Connection terminated unexpectedly
+[INFO] 2025-03-25T07:25:49.517Z ✅ Loaded command: ai
+[INFO] 2025-03-25T07:25:49.521Z ✅ Loaded command: campuchia
+[INFO] 2025-03-25T07:25:49.522Z ✅ Loaded command: chats
+[INFO] 2025-03-25T07:25:49.522Z ✅ Loaded command: clear
+[INFO] 2025-03-25T07:25:49.523Z ✅ Loaded command: clearlog
+[INFO] 2025-03-25T07:25:49.524Z ✅ Loaded command: clearai
+[INFO] 2025-03-25T07:25:49.525Z ✅ Loaded command: continuechat
+[INFO] 2025-03-25T07:25:49.526Z ✅ Loaded command: gai
+[INFO] 2025-03-25T07:25:49.527Z ✅ Loaded command: help
+[INFO] 2025-03-25T07:25:49.528Z ✅ Loaded command: info
+[INFO] 2025-03-25T07:25:49.529Z ✅ Loaded command: logs
+[INFO] 2025-03-25T07:25:49.530Z ✅ Loaded command: newchat
+[INFO] 2025-03-25T07:25:49.531Z ✅ Loaded command: purge
+[INFO] 2025-03-25T07:25:49.532Z ✅ Loaded command: run
+[INFO] 2025-03-25T07:25:49.579Z Server đang chạy trên port 🖥️ 3000
+[INFO] 2025-03-25T07:25:50.886Z Bot đã sẵn sàng! Đăng nhập với tên luuluanbot#3009
+[INFO] 2025-03-25T07:25:50.889Z Lần chích điện ⚡⚡ tiếp theo vào 16:00 (94 phút nữa 🤗)
+[ERROR] 2025-03-25T07:25:51.402Z Lỗi kết nối database: Connection terminated unexpectedly
+[INFO] 2025-03-25T07:37:17.877Z ✅ Loaded command: ai
+[INFO] 2025-03-25T07:37:17.881Z ✅ Loaded command: campuchia
+[INFO] 2025-03-25T07:37:17.882Z ✅ Loaded command: chats
+[INFO] 2025-03-25T07:37:17.883Z ✅ Loaded command: clear
+[INFO] 2025-03-25T07:37:17.884Z ✅ Loaded command: clearlog
+[INFO] 2025-03-25T07:37:17.885Z ✅ Loaded command: clearai
+[INFO] 2025-03-25T07:37:17.887Z ✅ Loaded command: gai
+[INFO] 2025-03-25T07:37:17.886Z ✅ Loaded command: continuechat
+[INFO] 2025-03-25T07:37:17.888Z ✅ Loaded command: help
+[INFO] 2025-03-25T07:37:17.889Z ✅ Loaded command: info
+[INFO] 2025-03-25T07:37:17.890Z ✅ Loaded command: logs
+[INFO] 2025-03-25T07:37:17.891Z ✅ Loaded command: newchat
+[INFO] 2025-03-25T07:37:17.892Z ✅ Loaded command: purge
+[INFO] 2025-03-25T07:37:17.894Z ✅ Loaded command: run
+[INFO] 2025-03-25T07:37:17.952Z 🖥️ Server đang chạy trên port: 3000
+[INFO] 2025-03-25T07:37:19.213Z Bot đã sẵn sàng! Đăng nhập với tên luuluanbot#3009
+[INFO] 2025-03-25T07:37:19.215Z Lần chích điện ⚡⚡ tiếp theo vào 16:00 (83 phút nữa 🤗)
+[ERROR] 2025-03-25T07:37:19.721Z Lỗi kết nối database: Connection terminated unexpectedly

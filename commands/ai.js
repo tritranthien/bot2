@@ -1,10 +1,14 @@
 // commands/ai.js
-const db = require('../utils/database');
+if (process.env.APP_ENV == 'local') {
+    const db = require('../utils/sddatabase3');
+} else {
+    const db = require('../utils/database');
+}
 require('../utils/logger');
 
 module.exports = {
     name: 'ai',
-    description: 'Talk to the AI with persistent conversation history using the current chat.',
+    description: 'Talk to the AI with persistent conversation history using the current chat. 🤖',
     
     async execute(message, args, config, logModAction, sendEmbedMessage, client, model) {
         if (!args.length) {
@@ -32,7 +36,7 @@ module.exports = {
                 parts: [{ text: row.content }]
             }));
             
-            console.log(`Lịch sử cuộc trò chuyện của ${userId}: ${JSON.stringify(conversation)}`);
+            console.log(`🗣️ Lịch sử cuộc trò chuyện của ${userId}: ${JSON.stringify(conversation)}`);
             
             // Kiểm tra xem lịch sử có trống không
             if (conversation.length === 0) {
@@ -60,10 +64,10 @@ module.exports = {
                     //     await message.delete();
                     // }
                 } catch (error) {
-                    console.error(`Lỗi khi gọi generateContent: ${error.message}`);
+                    console.error(`❌ Lỗi khi gọi generateContent: ${error.message}`);
                     // Xóa thông báo đang xử lý
                     await processingMsg.delete();
-                    message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
+                    message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
                 }
                 return;
             }
@@ -103,12 +107,12 @@ module.exports = {
                 //     await message.delete();
                 // }
             } catch (error) {
-                console.error(`Lỗi khi gọi startChat: ${error.message}`);
+                console.error(`❌ Lỗi khi gọi startChat: ${error.message}`);
                 // Xóa thông báo đang xử lý
                 await processingMsg.delete();
                 
                 // Thông báo lỗi cho người dùng
-                message.reply('Có lỗi xảy ra khi gọi AI. Đang thử lại với cuộc trò chuyện mới...');
+                message.reply('❌ Có lỗi xảy ra khi gọi AI. Đang thử lại với cuộc trò chuyện mới...');
                 
                 // Tạo một cuộc trò chuyện mới để bắt đầu lại
                 try {
@@ -129,13 +133,13 @@ module.exports = {
                     // Gửi câu trả lời cho người dùng
                     await sendEmbedMessage(message.channel, message.author, content);
                 } catch (fallbackError) {
-                    console.error(`Lỗi khi thử lại với generateContent: ${fallbackError.message}`);
-                    message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
+                    console.error(`❌ Lỗi khi thử lại với generateContent: ${fallbackError.message}`);
+                    message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
                 }
             }
         } catch (error) {
-            console.error(`Lỗi chung khi gọi AI: ${error.message}`);
-            message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
+            console.error(`❌ Lỗi chung khi gọi AI: ${error.message}`);
+            message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
         }
     },
 };

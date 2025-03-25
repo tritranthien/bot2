@@ -4,7 +4,7 @@ require('../utils/logger');
 
 module.exports = {
     name: 'clearai',
-    description: 'Xóa lịch sử trò chuyện AI của bạn. Bạn có thể xóa toàn bộ lịch sử hoặc một cuộc trò chuyện cụ thể bằng cách cung cấp ID.',
+    description: 'Xóa lịch sử trò chuyện AI của bạn. Bạn có thể xóa toàn bộ lịch sử hoặc một cuộc trò chuyện cụ thể bằng cách cung cấp ID. 🗑️',
     
     async execute(message, args, config, logModAction, sendEmbedMessage, client, model) {
         const userId = message.author.id;

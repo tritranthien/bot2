@@ -1,16 +1,16 @@
 // utils/database.js
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const logger = require('./logger');
+require('./logger');
 
 // Kết nối tới database
 const dbPath = path.join(__dirname, '../data/bot.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
-        logger.error(`Lỗi kết nối database: ${err.message}`);
+        console.error(`❌ Lỗi kết nối database: ${err.message}`);
         return;
     }
-    logger.log('Đã kết nối tới SQLite database.');
+    console.log('✅ Đã kết nối tới SQLite database.');
 });
 
 function initDb() {
@@ -52,7 +52,7 @@ function initDb() {
             chat_id INTEGER NOT NULL
         )`);
         
-        logger.log('Đã khởi tạo cơ sở dữ liệu');
+        console.log('✅ Đã khởi tạo cơ sở dữ liệu');
     });
 }
 
@@ -121,7 +121,7 @@ async function createNewChat(userId) {
                     sequence: sequence
                 });
                 
-                logger.log(`Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${this.lastID})`);
+                console.log(`💬 Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${this.lastID})`);
             });
         } catch (error) {
             reject(error);
@@ -216,10 +216,10 @@ async function summarizeAndUpdateChatTitle(userId, model) {
         // Cập nhật tiêu đề
         await updateChatTitle(currentChat.id, title);
         
-        logger.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
+        console.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
         
     } catch (error) {
-        logger.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
+        console.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
         // Tiếp tục mà không làm gì nếu tóm tắt thất bại
     }
 }
@@ -234,7 +234,7 @@ async function deleteUserChatHistory(userId) {
             // Lấy danh sách các chat_id của người dùng
             db.all('SELECT id FROM chats WHERE user_id = ?', [userId], (err, rows) => {
                 if (err) {
-                    logger.error(`Lỗi khi lấy danh sách chat ID: ${err.message}`);
+                    console.error(`Lỗi khi lấy danh sách chat ID: ${err.message}`);
                     return reject(err);
                 }
                 
@@ -243,7 +243,7 @@ async function deleteUserChatHistory(userId) {
                     // Reset sequence cho người dùng
                     db.run('UPDATE user_sequences SET last_sequence = 0 WHERE user_id = ?', [userId], (seqErr) => {
                         if (seqErr) {
-                            logger.error(`Lỗi khi reset sequence: ${seqErr.message}`);
+                            console.error(`Lỗi khi reset sequence: ${seqErr.message}`);
                         }
                         return resolve({ messagesDeleted: 0, chatsDeleted: 0 });
                     });
@@ -256,7 +256,7 @@ async function deleteUserChatHistory(userId) {
                 // Bắt đầu transaction để đảm bảo tính toàn vẹn dữ liệu
                 db.run('BEGIN TRANSACTION', (transErr) => {
                     if (transErr) {
-                        logger.error(`Lỗi khi bắt đầu transaction: ${transErr.message}`);
+                        console.error(`Lỗi khi bắt đầu transaction: ${transErr.message}`);
                         return reject(transErr);
                     }
                     
@@ -266,7 +266,7 @@ async function deleteUserChatHistory(userId) {
                         if (messagesErr) {
                             // Nếu có lỗi, rollback transaction
                             db.run('ROLLBACK', () => {
-                                logger.error(`Lỗi khi xóa tin nhắn: ${messagesErr.message}`);
+                                console.error(`Lỗi khi xóa tin nhắn: ${messagesErr.message}`);
                                 reject(messagesErr);
                             });
                             return;
@@ -277,7 +277,7 @@ async function deleteUserChatHistory(userId) {
                             if (chatsErr) {
                                 // Nếu có lỗi, rollback transaction
                                 db.run('ROLLBACK', () => {
-                                    logger.error(`Lỗi khi xóa cuộc trò chuyện: ${chatsErr.message}`);
+                                    console.error(`Lỗi khi xóa cuộc trò chuyện: ${chatsErr.message}`);
                                     reject(chatsErr);
                                 });
                                 return;
@@ -288,7 +288,7 @@ async function deleteUserChatHistory(userId) {
                                 if (seqErr) {
                                     // Nếu có lỗi, rollback transaction
                                     db.run('ROLLBACK', () => {
-                                        logger.error(`Lỗi khi reset sequence: ${seqErr.message}`);
+                                        console.error(`Lỗi khi reset sequence: ${seqErr.message}`);
                                         reject(seqErr);
                                     });
                                     return;
@@ -297,7 +297,7 @@ async function deleteUserChatHistory(userId) {
                                 // Hoàn thành transaction
                                 db.run('COMMIT', (commitErr) => {
                                     if (commitErr) {
-                                        logger.error(`Lỗi khi commit transaction: ${commitErr.message}`);
+                                        console.error(`Lỗi khi commit transaction: ${commitErr.message}`);
                                         return reject(commitErr);
                                     }
                                     
@@ -306,7 +306,7 @@ async function deleteUserChatHistory(userId) {
                                         messagesDeleted: chatIds.length > 0 ? true : false, 
                                         chatsDeleted: rows.length 
                                     });
-                                    logger.log(`Đã xóa ${rows.length} cuộc trò chuyện và reset sequence của người dùng ${userId}`);
+                                    console.log(`Đã xóa ${rows.length} cuộc trò chuyện và reset sequence của người dùng ${userId}`);
                                 });
                             });
                         });
@@ -328,7 +328,7 @@ async function deleteChatById(userId, chatId) {
         // Kiểm tra xem cuộc trò chuyện có tồn tại và thuộc về người dùng này không
         db.get('SELECT id FROM chats WHERE user_id = ? AND chat_id = ?', [userId, chatId], (err, row) => {
             if (err) {
-                logger.error(`Lỗi khi kiểm tra cuộc trò chuyện: ${err.message}`);
+                console.error(`Lỗi khi kiểm tra cuộc trò chuyện: ${err.message}`);
                 return reject(err);
             }
             
@@ -341,7 +341,7 @@ async function deleteChatById(userId, chatId) {
             // Bắt đầu transaction
             db.run('BEGIN TRANSACTION', (transErr) => {
                 if (transErr) {
-                    logger.error(`Lỗi khi bắt đầu transaction: ${transErr.message}`);
+                    console.error(`Lỗi khi bắt đầu transaction: ${transErr.message}`);
                     return reject(transErr);
                 }
                 
@@ -350,7 +350,7 @@ async function deleteChatById(userId, chatId) {
                     if (messagesErr) {
                         // Nếu có lỗi, rollback transaction
                         db.run('ROLLBACK', () => {
-                            logger.error(`Lỗi khi xóa tin nhắn: ${messagesErr.message}`);
+                            console.error(`Lỗi khi xóa tin nhắn: ${messagesErr.message}`);
                             reject(messagesErr);
                         });
                         return;
@@ -361,7 +361,7 @@ async function deleteChatById(userId, chatId) {
                         if (chatErr) {
                             // Nếu có lỗi, rollback transaction
                             db.run('ROLLBACK', () => {
-                                logger.error(`Lỗi khi xóa cuộc trò chuyện: ${chatErr.message}`);
+                                console.error(`Lỗi khi xóa cuộc trò chuyện: ${chatErr.message}`);
                                 reject(chatErr);
                             });
                             return;
@@ -370,7 +370,7 @@ async function deleteChatById(userId, chatId) {
                         // Hoàn thành transaction
                         db.run('COMMIT', (commitErr) => {
                             if (commitErr) {
-                                logger.error(`Lỗi khi commit transaction: ${commitErr.message}`);
+                                console.error(`Lỗi khi commit transaction: ${commitErr.message}`);
                                 return reject(commitErr);
                             }
                             
@@ -379,7 +379,7 @@ async function deleteChatById(userId, chatId) {
                                 success: true, 
                                 chatId: chatId
                             });
-                            logger.log(`Đã xóa cuộc trò chuyện ${chatId} của người dùng ${userId}`);
+                            console.log(`Đã xóa cuộc trò chuyện ${chatId} của người dùng ${userId}`);
                         });
                     });
                 });
@@ -516,10 +516,10 @@ const getCurrentChatHistory = async (userId, limit = 10) => {
 const closeDb = () => {
     db.close((err) => {
         if (err) {
-            logger.error(`Lỗi đóng database: ${err.message}`);
+            console.error(`Lỗi đóng database: ${err.message}`);
             return;
         }
-        logger.log('Đã đóng kết nối database.');
+        console.log('Đã đóng kết nối database.');
     });
 };
 
@@ -538,11 +538,11 @@ async function updateChatTime(userId, chatId) {
         db.run('UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', 
             [chatId, userId], (err) => {
             if (err) {
-                logger.error(`Lỗi khi cập nhật thời gian trò chuyện: ${err.message}`);
+                console.error(`Lỗi khi cập nhật thời gian trò chuyện: ${err.message}`);
                 return reject(err);
             }
             resolve(true);
-            logger.log(`Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId} của người dùng ${userId}`);
+            console.log(`Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId} của người dùng ${userId}`);
         });
     });
 }
@@ -555,7 +555,7 @@ async function getMessagesFromChat(chatDbId, limit = 10) {
             [chatDbId, limit * 2], // Nhân đôi vì mỗi lượt tương tác có 2 tin nhắn
             (err, rows) => {
                 if (err) {
-                    logger.error(`Lỗi khi lấy tin nhắn từ cuộc trò chuyện: ${err.message}`);
+                    console.error(`Lỗi khi lấy tin nhắn từ cuộc trò chuyện: ${err.message}`);
                     reject(err);
                     return;
                 }

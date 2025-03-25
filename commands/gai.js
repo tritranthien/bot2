@@ -1,5 +1,10 @@
 const db = require('../utils/database.js');
-const logger = require('../utils/logger');
+require('../utils/logger');
+if (process.env.APP_ENV == 'local') {
+    const db = require('../utils/sddatabase3.js');
+} else {
+    const db = require('../utils/database.js');
+}
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
@@ -87,7 +92,7 @@ module.exports = {
             const chatList = await db.getGlobalChatList();
 
             if (chatList.length === 0) {
-                return message.reply('Chưa có cuộc trò chuyện nào.');
+                return message.reply('Chưa có cuộc trò chuyện nào. 🪹');
             }
 
             const embed = new EmbedBuilder()
@@ -111,8 +116,8 @@ module.exports = {
             await message.channel.send({ embeds: [embed] });
 
         } catch (error) {
-            logger.error(`Lỗi khi xem danh sách chat: ${error.message}`);
-            message.reply('Có lỗi xảy ra khi lấy danh sách chat.');
+           console.error(`❌ Lỗi khi xem danh sách chat: ${error.message}`);
+            message.reply('❌ Có lỗi xảy ra khi lấy danh sách chat.');
         }
     },
 
@@ -141,7 +146,7 @@ module.exports = {
 
     async continueGlobalChat(message, chatId) {
         if (!chatId || !chatId.startsWith('g')) {
-            return message.reply('Vui lòng cung cấp Chat ID hợp lệ (ví dụ: g1, g2).');
+            return message.reply('💁 Vui lòng cung cấp Chat ID hợp lệ (ví dụ: g1, g2).');
         }
 
         try {
@@ -157,7 +162,7 @@ module.exports = {
             const messages = await db.getGlobalChatMessages(chatId, 5);
 
             if (messages.length === 0) {
-                return message.reply(`Không tìm thấy tin nhắn trong chat ${chatId}.`);
+                return message.reply(`Không tìm thấy tin nhắn trong chat ${chatId}. 🙈`);
             }
 
             const embed = new EmbedBuilder()
@@ -183,7 +188,7 @@ module.exports = {
             message.reply(`Đã chuyển đến chat ${chatId}. Bạn có thể tiếp tục trò chuyện.`);
 
         } catch (error) {
-            logger.error(`Lỗi khi tiếp tục chat: ${error.message}`);
+           console.error(`Lỗi khi tiếp tục chat: ${error.message}`);
             message.reply('Có lỗi xảy ra khi tiếp tục chat.');
         }
     },
@@ -343,7 +348,7 @@ module.exports = {
             await message.channel.send({ embeds: [embed] });
 
         } catch (error) {
-            logger.error(`Lỗi khi xem danh sách chat: ${error.message}`);
+           console.error(`Lỗi khi xem danh sách chat: ${error.message}`);
             message.reply('Có lỗi xảy ra khi lấy danh sách chat.');
         }
     },
