@@ -61,7 +61,6 @@ client.once('ready', () => {
     }
   });
   scheduleNextMessage(client, config);
-  sendScheduledMessage(client, config);
 });
 
 // Xử lý tin nhắn
