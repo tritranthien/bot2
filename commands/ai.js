@@ -1,5 +1,9 @@
 // commands/ai.js
-const db = require('../utils/database');
+if (process.env.APP_ENV == 'local') {
+    const db = require('../utils/sddatabase3');
+} else {
+    const db = require('../utils/database');
+}
 require('../utils/logger');
 
 module.exports = {

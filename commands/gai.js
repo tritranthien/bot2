@@ -1,5 +1,11 @@
 const db = require('../utils/database.js');
 require('../utils/logger');
+if (process.env.APP_ENV == 'local') {
+    const db = require('../utils/sddatabase3.js');
+} else {
+    const db = require('../utils/database.js');
+}
+const logger = require('../utils/logger');
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
