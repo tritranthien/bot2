@@ -22,48 +22,54 @@ function initDb() {
         }
 
         const queries = `
-    -- Bảng user_sequences để lưu trữ sequence cho mỗi user
-    CREATE TABLE IF NOT EXISTS user_sequences (
-        user_id TEXT PRIMARY KEY,
-        last_sequence INTEGER DEFAULT 0
-    );
-    
-    -- Bảng chats
-    CREATE TABLE IF NOT EXISTS chats (
-        id SERIAL PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        chat_sequence INTEGER NOT NULL,
-        chat_id TEXT NOT NULL,
-        title TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(user_id, chat_sequence)
-    );
-    
-    -- Bảng chat_messages
-    CREATE TABLE IF NOT EXISTS chat_messages (
-        id SERIAL PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        role TEXT NOT NULL,
-        content TEXT NOT NULL,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE
-    );
+            -- Bảng user_sequences để lưu trữ sequence cho mỗi user
+            CREATE TABLE IF NOT EXISTS user_sequences (
+                user_id TEXT PRIMARY KEY,
+                last_sequence INTEGER DEFAULT 0
+            );
+            
+            -- Bảng chats
+            CREATE TABLE IF NOT EXISTS chats (
+                id SERIAL PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                chat_sequence INTEGER NOT NULL,
+                chat_id TEXT NOT NULL,
+                title TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, chat_sequence)
+            );
+            
+            -- Bảng chat_messages
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id SERIAL PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE
+            );
 
-    -- Add global chat table
-    CREATE TABLE IF NOT EXISTS global_chat (
-        id SERIAL PRIMARY KEY,
-        message_id SERIAL,
-        chat_sequence INTEGER NOT NULL,
-        user_id TEXT NOT NULL,
-        role TEXT NOT NULL,
-        content TEXT NOT NULL,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    -- Tạo index để tăng tốc truy vấn
-    CREATE INDEX IF NOT EXISTS idx_global_chat_sequence ON global_chat(chat_sequence);
-`;
+            -- Add global chat table
+            CREATE TABLE IF NOT EXISTS global_chats (
+                id SERIAL PRIMARY KEY,
+                chat_sequence INTEGER NOT NULL,
+                chat_id TEXT NOT NULL,
+                creator_id TEXT NOT NULL,
+                title TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(chat_sequence)
+            );
+            CREATE TABLE IF NOT EXISTS global_chat_messages (
+                id SERIAL PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE
+            );
+        `;
 
         client.query(queries, (err) => {
             release();
@@ -153,16 +159,27 @@ async function getUserChats(userId) {
     }
 }
 
+async function getGlobalChats() {
+    const client = await pool.connect();
+    try {
+        const result = await client.query(
+            'SELECT id, chat_id, chat_sequence, title, updated_at FROM global_chats ORDER BY updated_at DESC'
+        );
+        return result.rows;
+    } finally {
+        client.release();
+    }
+}
 /**
  * Cập nhật tiêu đề cuộc trò chuyện
  * @param {number} chatId - ID của cuộc trò chuyện
  * @param {string} title - Tiêu đề mới
  */
-async function updateChatTitle(chatId, title) {
+async function updateChatTitle(chatId, title, table = 'chats') {
     const client = await pool.connect();
     try {
         await client.query(
-            'UPDATE chats SET title = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+            `UPDATE ${table} SET title = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
             [title, chatId]
         );
         return true;
@@ -197,6 +214,36 @@ async function deleteUserChatHistory(userId) {
         await client.query('COMMIT');
 
         console.log(`Đã xóa ${result.rowCount} cuộc trò chuyện và reset sequence của người dùng ${userId}`);
+
+        return {
+            messagesDeleted: result.rowCount > 0,
+            chatsDeleted: result.rowCount
+        };
+    } catch (error) {
+        // Rollback transaction nếu có lỗi
+        await client.query('ROLLBACK');
+        console.error(`Lỗi khi xóa lịch sử trò chuyện: ${error.message}`);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+async function deleteGlobalChatHistory() {
+    const client = await pool.connect();
+    try {
+        // Bắt đầu transaction
+        await client.query('BEGIN');
+
+        // Xóa tất cả cuộc trò chuyện và tin nhắn
+        const result = await client.query(
+            'DELETE FROM global_chats'
+        );
+
+        // Commit transaction
+        await client.query('COMMIT');
+
+        console.log(`Đã xóa ${result.rowCount} cuộc trò chuyện`);
 
         return {
             messagesDeleted: result.rowCount > 0,
@@ -261,6 +308,49 @@ async function deleteChatById(userId, chatId) {
     }
 }
 
+async function deleteGlobalChatById(chatId) {
+    const client = await pool.connect();
+    try {
+        // Bắt đầu transaction
+        await client.query('BEGIN');
+
+        // Kiểm tra xem cuộc trò chuyện có tồn tại và thuộc về người dùng này không
+        const checkResult = await client.query(
+            'SELECT id FROM global_chats WHERE chat_id = $1',
+            [chatId]
+        );
+
+        if (checkResult.rowCount === 0) {
+            throw new Error('Không tìm thấy cuộc trò chuyện');
+        }
+
+        const dbChatId = checkResult.rows[0].id;
+
+        // Xóa tin nhắn trong cuộc trò chuyện
+        await client.query('DELETE FROM global_chat_messages WHERE chat_id = $1', [dbChatId]);
+
+        // Xóa cuộc trò chuyện
+        await client.query('DELETE FROM global_chats WHERE id = $1', [dbChatId]);
+
+        // Commit transaction
+        await client.query('COMMIT');
+
+        console.log(`Đã xóa cuộc trò chuyện ${chatId}`);
+
+        return {
+            success: true,
+            chatId: chatId
+        };
+    } catch (error) {
+        // Rollback transaction nếu có lỗi
+        await client.query('ROLLBACK');
+        console.error(`Lỗi khi xóa cuộc trò chuyện: ${error.message}`);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
 // Lấy ID cuộc trò chuyện hiện tại của người dùng
 async function getCurrentChatId(userId) {
     const client = await pool.connect();
@@ -283,7 +373,25 @@ async function getCurrentChatId(userId) {
         client.release();
     }
 }
+async function getCurrentGlobalChatId(userId) {
+    const client = await pool.connect();
+    try {
+        const result = await client.query(
+            `SELECT id FROM global_chats 
+             ORDER BY updated_at DESC LIMIT 1`,
+        );
 
+        if (result.rowCount === 0) {
+            // Nếu không có chat nào, tạo mới
+            const newChat = await createNewGlobalChat(userId);
+            return newChat.id;
+        }
+
+        return result.rows[0].id;
+    } finally {
+        client.release();
+    }
+}
 // Lấy thông tin cuộc trò chuyện hiện tại của người dùng
 async function getCurrentChat(userId) {
     const client = await pool.connect();
@@ -358,7 +466,10 @@ async function getCurrentChatHistory(userId, limit = 10) {
     const chatId = await getCurrentChatId(userId);
     return await getChatMessages(chatId, limit);
 }
-
+async function getCurrentGlobalChatHistory(userId, limit = 10) {
+    const chatId = await getCurrentGlobalChatId(userId);
+    return await getGlobalChatMessages(chatId, limit);
+}
 // Cập nhật thời gian truy cập của cuộc trò chuyện
 async function updateChatTime(userId, chatId) {
     const client = await pool.connect();
@@ -368,6 +479,20 @@ async function updateChatTime(userId, chatId) {
             [chatId, userId]
         );
         console.log(`Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId} của người dùng ${userId}`);
+        return true;
+    } finally {
+        client.release();
+    }
+}
+
+async function updateGlobalChatTime(chatId) {
+    const client = await pool.connect();
+    try {
+        await client.query(
+            'UPDATE global_chats SET updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+            [chatId]
+        );
+        console.log(`Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId}`);
         return true;
     } finally {
         client.release();
@@ -456,44 +581,113 @@ async function summarizeAndUpdateChatTitle(userId, model) {
         client.release();
     }
 }
+async function getCurrentGlobalChat(userId) {
+    try {
+        const result = await client.query(
+            `SELECT id, chat_id FROM global_chats 
+             ORDER BY updated_at DESC LIMIT 1`,
+        );
+
+        if (result.rowCount === 0) {
+            const newChat = await createNewGlobalChat(userId);
+            return {
+                id: newChat.id,
+                chat_id: newChat.chatId
+            };
+        }
+
+        return result.rows[0];
+    } catch (error) {
+        console.log(error);
+    }
+}
+async function summarizeAndUpdateGlobalChatTitle(userId, model) {
+    const client = await pool.connect();
+    try {
+        // Lấy cuộc trò chuyện hiện tại của người dùng
+        const currentChat = await getCurrentGlobalChat(userId);
+
+
+        // Lấy một số tin nhắn gần đây để tóm tắt
+        const messagesResult = await client.query(
+            'SELECT role, content FROM global_chat_messages WHERE chat_id = $1 ORDER BY timestamp DESC LIMIT 5',
+            [currentChat.id]
+        );
+
+        const messages = messagesResult.rows;
+
+        if (messages.length === 0) {
+            return;
+        }
+
+
+        // Tạo context cho AI
+        let context = messages.map(msg => `${msg.role === 'user' ? 'Người dùng' : 'AI'}: ${msg.content}`).reverse().join('\n');
+
+
+        // Prompt để tóm tắt
+        const prompt = `Dựa vào đoạn hội thoại sau, hãy tạo một tiêu đề ngắn gọn (dưới 50 ký tự) cho cuộc trò chuyện này:\n\n${context}\n\nTiêu đề:`;
+
+
+        // Gọi AI để tóm tắt
+        const result = await model.generateContent(prompt);
+        let title = result.response.text().trim();
+
+
+        // Đảm bảo tiêu đề không quá dài
+        if (title.length > 50) {
+            title = title.substring(0, 47) + '...';
+        }
+
+
+        // Thêm chat_id vào tiêu đề
+        title = `[${currentChat.chat_id}] ${title}`;
+
+
+        // Cập nhật tiêu đề
+        await updateChatTitle(currentChat.id, title, 'global_chats');
+
+        logger.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
+
+    } catch (error) {
+        logger.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
+    } finally {
+        client.release();
+    }
+}
 
 async function addGlobalChatMessage(userId, role, content) {
     const client = await pool.connect();
     try {
+        const chatId = await getCurrentGlobalChatId(userId);
+
         const result = await client.query(
-            `INSERT INTO global_chat (user_id, role, content) 
-             VALUES ($1, $2, $3) 
+            `INSERT INTO global_chat_messages (chat_id, user_id, role, content) 
+             VALUES ($1, $2, $3, $4) 
              RETURNING id`,
-            [userId, role, content]
+            [chatId, userId, role, content]
         );
+
+        // Cập nhật thời gian cập nhật mới nhất của cuộc trò chuyện
+        await client.query(
+            `UPDATE global_chats SET updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+            [chatId]
+        );
+
         return result.rows[0].id;
     } finally {
         client.release();
     }
 }
 
-async function getGlobalChatHistory(limit = 5) {
-    const client = await pool.connect();
-    try {
-        const result = await client.query(
-            `SELECT user_id, role, content 
-             FROM global_chat 
-             ORDER BY id DESC LIMIT $1`,
-            [limit * 2]
-        );
-        return result.rows.reverse();
-    } finally {
-        client.release();
-    }
-}
 
-async function createNewGlobalChat() {
+async function createNewGlobalChat(senderId) {
     const client = await pool.connect();
     try {
         // Lấy sequence tiếp theo
         const sequenceResult = await client.query(`
             SELECT COALESCE(MAX(chat_sequence), 0) + 1 as next_sequence 
-            FROM global_chat
+            FROM global_chats
         `);
         
         const sequence = sequenceResult.rows[0].next_sequence;
@@ -501,8 +695,18 @@ async function createNewGlobalChat() {
         
         logger.log(`Đã tạo global chat mới: ${chatId}`);
         
+        const result = await client.query(
+            `INSERT INTO global_chats (chat_sequence, chat_id, title, creator_id) 
+             VALUES ($1, $2, $3) 
+             RETURNING id, chat_id`,
+            [sequence, chatId, `Cuộc trò chuyện ${sequence}`, senderId]
+        );
+
+        logger.log(`Đã tạo cuộc trò chuyện mới: ${chatId} (ID: ${result.rows[0].id})`);
+
         return {
-            chatId: chatId,
+            id: result.rows[0].id,
+            chatId: result.rows[0].chat_id,
             sequence: sequence
         };
     } finally {
@@ -510,66 +714,27 @@ async function createNewGlobalChat() {
     }
 }
 
-async function getLatestGlobalChat() {
-    const client = await pool.connect();
-    try {
-        const result = await client.query(`
-            SELECT DISTINCT chat_sequence, 
-                   (SELECT COUNT(*) FROM global_chat gc2 WHERE gc2.chat_sequence = gc1.chat_sequence) as message_count
-            FROM global_chat gc1
-            ORDER BY chat_sequence DESC
-            LIMIT 1
-        `);
-        
-        if (result.rows.length === 0) {
-            return null;
-        }
-        
-        const latestChat = result.rows[0];
-        return {
-            chatId: `g${latestChat.chat_sequence}`,
-            messageCount: latestChat.message_count,
-            sequence: latestChat.chat_sequence
-        };
-    } finally {
-        client.release();
-    }
-}
-
 async function getGlobalChatList() {
-    const client = await pool.connect();
     try {
-        const result = await client.query(`
-            SELECT DISTINCT chat_sequence, 
-                   (SELECT COUNT(*) FROM global_chat gc2 WHERE gc2.chat_sequence = gc1.chat_sequence) as message_count,
-                   (SELECT content FROM global_chat gc3 WHERE gc3.chat_sequence = gc1.chat_sequence ORDER BY id LIMIT 1) as first_message
-            FROM global_chat gc1
-            ORDER BY chat_sequence DESC
-        `);
-        
-        return result.rows.map(row => ({
-            chatId: `g${row.chat_sequence}`,
-            messageCount: row.message_count,
-            summary: row.first_message ? row.first_message.substring(0, 50) + '...' : 'Chưa có tin nhắn'
-        }));
-    } finally {
-        client.release();
+        const chats = await getGlobalChats();
+        return chats; // Trả về danh sách chats cho người dùng sử dụn
+    } catch (error) {
+        console.error(`Lỗi khi lấy danh sách cuộc trò chuyện: ${error.message}`);
+        return [];
     }
 }
 
 async function getGlobalChatMessages(chatId, limit = 10) {
     const client = await pool.connect();
     try {
-        const sequence = parseInt(chatId.replace('g', ''));
-        
-        const result = await client.query(`
-            SELECT user_id, role, content 
-            FROM global_chat 
-            WHERE chat_sequence = $1
-            ORDER BY id DESC 
-            LIMIT $2
-        `, [sequence, limit * 2]);
-        
+        const result = await client.query(
+            `SELECT role, content FROM global_chat_messages 
+             WHERE chat_id = $1 
+             ORDER BY id DESC LIMIT $2`,
+            [chatId, limit * 2]
+        );
+
+        // Đảo ngược để có thứ tự thời gian đúng
         return result.rows.reverse();
     } finally {
         client.release();
@@ -580,38 +745,12 @@ async function addGlobalChatMessage(userId, role, content, chatSequence) {
     const client = await pool.connect();
     try {
         const result = await client.query(
-            `INSERT INTO global_chat (chat_sequence, user_id, role, content) 
+            `INSERT INTO global_chats (chat_sequence, user_id, role, content) 
              VALUES ($1, $2, $3, $4)
              RETURNING id`,
             [chatSequence, userId, role, content]
         );
         return result.rows[0].id;
-    } finally {
-        client.release();
-    }
-}
-
-async function deleteGlobalChatHistory(chatId) {
-    const client = await pool.connect();
-    try {
-        if (!chatId) {
-            // Xóa toàn bộ lịch sử nếu không cung cấp chatId
-            await client.query('DELETE FROM global_chat');
-            return { messagesDeleted: true };
-        }
-
-        const sequence = parseInt(chatId.replace('g', ''));
-        
-        // Xóa tin nhắn theo sequence
-        const result = await client.query(
-            'DELETE FROM global_chat WHERE chat_sequence = $1', 
-            [sequence]
-        );
-
-        return { 
-            messagesDeleted: result.rowCount > 0, 
-            deletedCount: result.rowCount 
-        };
     } finally {
         client.release();
     }
@@ -631,11 +770,14 @@ module.exports = {
     deleteChatById,
     updateChatTime,
     getMessagesFromChat,
-    getGlobalChatHistory,
     createNewGlobalChat,
     getGlobalChatList,
     getGlobalChatMessages,
     addGlobalChatMessage,
-    getLatestGlobalChat,
+    getCurrentGlobalChatHistory,
+    summarizeAndUpdateGlobalChatTitle,
+    getGlobalChats,
+    updateGlobalChatTime,
+    deleteGlobalChatById,
     deleteGlobalChatHistory
 };
