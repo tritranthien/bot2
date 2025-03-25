@@ -12,7 +12,7 @@ module.exports = {
     
     async execute(message, args, config, logModAction, sendEmbedMessage, client, model) {
         if (!args.length) {
-            return message.reply('Bạn cần nhập nội dung để gọi AI.');
+            return message.reply('⚠️ Bạn cần nhập nội dung để gọi AI.');
         }
 
         let userId = message.author.id;
@@ -57,12 +57,7 @@ module.exports = {
                     
                     // Gửi câu trả lời cho người dùng
                     await sendEmbedMessage(message.channel, message.author, content);
-                    
-                    // LOẠI BỎ phần xóa lệnh của người dùng
-                    // const fetchedMessage = await message.channel.messages.fetch(message.id).catch(() => null);
-                    // if (fetchedMessage) {
-                    //     await message.delete();
-                    // }
+                                        
                 } catch (error) {
                     console.error(`❌ Lỗi khi gọi generateContent: ${error.message}`);
                     // Xóa thông báo đang xử lý
@@ -100,19 +95,14 @@ module.exports = {
                 
                 // Gửi câu trả lời cho người dùng
                 await sendEmbedMessage(message.channel, message.author, content);
-                
-                // LOẠI BỎ phần xóa lệnh của người dùng
-                // const fetchedMessage = await message.channel.messages.fetch(message.id).catch(() => null);
-                // if (fetchedMessage) {
-                //     await message.delete();
-                // }
+                                
             } catch (error) {
                 console.error(`❌ Lỗi khi gọi startChat: ${error.message}`);
                 // Xóa thông báo đang xử lý
                 await processingMsg.delete();
                 
                 // Thông báo lỗi cho người dùng
-                message.reply('❌ Có lỗi xảy ra khi gọi AI. Đang thử lại với cuộc trò chuyện mới...');
+                message.reply('🔄 Đang thử lại với cuộc trò chuyện mới...');
                 
                 // Tạo một cuộc trò chuyện mới để bắt đầu lại
                 try {
@@ -132,6 +122,7 @@ module.exports = {
                     
                     // Gửi câu trả lời cho người dùng
                     await sendEmbedMessage(message.channel, message.author, content);
+                    
                 } catch (fallbackError) {
                     console.error(`❌ Lỗi khi thử lại với generateContent: ${fallbackError.message}`);
                     message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
