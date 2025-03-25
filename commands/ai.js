@@ -1,5 +1,5 @@
 // commands/ai.js
-const db = require('../utils/database');
+const db = require('../utils/database.js');
 const logger = require('../utils/logger');
 
 module.exports = {
