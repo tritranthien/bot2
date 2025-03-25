@@ -1,1 +1,1 @@
-[INFO] 2025-03-25T04:44:49.165Z Lần chích điện ⚡⚡ tiếp theo vào 12:00 (15 phút nữa 🤗)
+[ERROR] 2025-03-25T05:17:27.121Z Lỗi khởi tạo cơ sở dữ liệu {"length":103,"name":"error","severity":"ERROR","code":"42703","file":"indexcmds.c","line":"1891","routine":"ComputeIndexAttrs"}
