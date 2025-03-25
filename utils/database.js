@@ -54,12 +54,12 @@ function initDb() {
             CREATE TABLE IF NOT EXISTS global_chats (
                 id SERIAL PRIMARY KEY,
                 chat_sequence INTEGER NOT NULL,
+                user_id TEXT DEFAULT global,
                 chat_id TEXT NOT NULL,
                 creator_id TEXT NOT NULL,
                 title TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(chat_sequence)
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             CREATE TABLE IF NOT EXISTS global_chat_messages (
                 id SERIAL PRIMARY KEY,
@@ -67,7 +67,7 @@ function initDb() {
                 role TEXT NOT NULL,
                 content TEXT NOT NULL,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE
+                chat_id INTEGER NOT NULL REFERENCES global_chats(id) ON DELETE CASCADE
             );
         `;
 
@@ -647,7 +647,7 @@ async function summarizeAndUpdateGlobalChatTitle(userId, model) {
         // Cập nhật tiêu đề
         await updateChatTitle(currentChat.id, title, 'global_chats');
 
-        logger.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
+        console.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
 
     } catch (error) {
         logger.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
@@ -697,19 +697,20 @@ async function createNewGlobalChat(senderId) {
         
         const result = await client.query(
             `INSERT INTO global_chats (chat_sequence, chat_id, title, creator_id) 
-             VALUES ($1, $2, $3) 
+             VALUES ($1, $2, $3, $4) 
              RETURNING id, chat_id`,
             [sequence, chatId, `Cuộc trò chuyện ${sequence}`, senderId]
         );
 
-        logger.log(`Đã tạo cuộc trò chuyện mới: ${chatId} (ID: ${result.rows[0].id})`);
+        console.log(`Đã tạo cuộc trò chuyện mới: ${chatId} (ID: ${result.rows[0].id})`);
 
         return {
             id: result.rows[0].id,
             chatId: result.rows[0].chat_id,
             sequence: sequence
         };
-    } finally {
+    }
+     finally {
         client.release();
     }
 }
