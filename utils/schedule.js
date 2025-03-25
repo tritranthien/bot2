@@ -27,6 +27,12 @@ const scheduleNextMessage = (client, config) => {
     logger.log(`Lần gửi tin tiếp theo vào ${nextHour}:00 (${Math.round(timeUntilNextMessage / 60000)} phút nữa)`);
 
     setTimeout(() => {
+        if (nextHour === 12 && day !== 0 && day !== 6) {
+            sendLunchReminder(client, config);
+        }
+        if (nextHour === 14 && day !== 0 && day !== 6) {
+            sendWaterReminder(client, config);
+        }
         sendScheduledMessage(client, config);
         scheduleNextMessage(client, config);
     }, timeUntilNextMessage);
@@ -36,6 +42,24 @@ const sendScheduledMessage = (client, config) => {
     const channel = client.channels.cache.get(config.aiChannel);
     if (channel) {
         channel.send(`<@${config.sonId}>, đã tới thời gian chích điện định kỳ, đưa cổ đây, <${config.camGif}> "rẹt rẹt rẹt ....."`);
+    } else {
+        logger.log('Không tìm thấy kênh.');
+    }
+};
+
+const sendLunchReminder = (client, config) => {
+    const channel = client.channels.cache.get(config.aiChannel);
+    if (channel) {
+        channel.send(`<@${config.sonId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm  🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`);
+    } else {
+        logger.log('Không tìm thấy kênh.');
+    }
+};
+
+const sendWaterReminder = (client, config) => {
+    const channel = client.channels.cache.get(config.aiChannel);
+    if (channel) {
+        channel.send(`<@${config.sonId}>, 2h chiều rồi, có đặt nước không? 🧃🚰`);
     } else {
         logger.log('Không tìm thấy kênh.');
     }
