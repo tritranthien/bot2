@@ -185,17 +185,17 @@ module.exports = {
             });
 
             await message.channel.send({ embeds: [embed] });
-            message.reply(`Đã chuyển đến chat ${chatId}. Bạn có thể tiếp tục trò chuyện.`);
-
+            message.reply(`Đã chuyển đến chat ${chatId}. Bạn có thể tiếp tục trò chuyện. 💬`);
+            
         } catch (error) {
-           console.error(`Lỗi khi tiếp tục chat: ${error.message}`);
-            message.reply('Có lỗi xảy ra khi tiếp tục chat.');
+           console.error(`❌ Lỗi khi tiếp tục chat: ${error.message}`);
+            message.reply('❌ Có lỗi xảy ra khi tiếp tục chat.');
         }
     },
 
     async processGlobalChatMessage(message, args, model, sendEmbedMessage) {
         if (!args.length) {
-            return message.reply('Vui lòng nhập nội dung để trò chuyện với AI.');
+            return message.reply('Vui lòng nhập nội dung để trò chuyện với AI. 💬');
         }
 
         const userId = message.author.id;
@@ -314,8 +314,8 @@ module.exports = {
                 }
             }
         } catch (error) {
-            console.error(`Lỗi chung khi gọi AI: ${error.message}`);
-            message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
+           console.error(`❌ Lỗi trong chat toàn cục: ${error.message}`);
+            message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
         }
     },
 
@@ -348,8 +348,8 @@ module.exports = {
             await message.channel.send({ embeds: [embed] });
 
         } catch (error) {
-           console.error(`Lỗi khi xem danh sách chat: ${error.message}`);
-            message.reply('Có lỗi xảy ra khi lấy danh sách chat.');
+           console.error(`❌ Lỗi khi xem danh sách chat: ${error.message}`);
+            message.reply('❌ Có lỗi xảy ra khi lấy danh sách chat.');
         }
     },
 
