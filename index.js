@@ -7,6 +7,7 @@ const logger = require('./utils/logger');
 const { logModAction, sendEmbedMessage } = require('./utils/helpers');
 require('./server2');
 const dbHandler = require('./utils/database');
+const { scheduleNextMessage, sendScheduledMessage } = require('./utils/schedule');
 
 // Import các lệnh
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -59,16 +60,7 @@ client.once('ready', () => {
       }
     }
   });
-
-  // Gửi tin nhắn định kỳ
-  setInterval(() => {
-    const channel = client.channels.cache.get(config.aiChannel);
-    if (channel) {
-      channel.send(`<@${config.sonId}>, đã tới thời gian chích điện định kỳ, đưa cổ đây,<${config.camGif}> "rẹt rẹt rẹt ....."`);
-    } else {
-      logger.log('Không tìm thấy kênh.');
-    }
-  }, 5200000);
+  scheduleNextMessage(client, config);
 });
 
 // Xử lý tin nhắn
