@@ -2,7 +2,7 @@ const fs = require("fs").promises;
 const path = require("path");
 
 module.exports = {
-    name: "clearLog",
+    name: "clearlog",
     description: "Xóa toàn bộ log trong thư mục logs",
     async execute(message, args) {
 

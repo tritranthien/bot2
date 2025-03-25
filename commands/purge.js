@@ -2,7 +2,7 @@
 require('../utils/logger');
 module.exports = {
     name: 'purge',
-    description: 'Purge messages in the channel.',
+    description: 'Purge messages in the channel. 🗑️',
     async execute(message, args, config, logModAction) {
         if (!message.member.permissions.has('ManageMessages')) {
             return message.reply('Bạn không có quyền sử dụng lệnh này.');
@@ -20,7 +20,7 @@ module.exports = {
                 logModAction(message.guild, 'Purge', message.author, null, `Đã xóa ${deleted.size - 1} tin nhắn trong kênh #${message.channel.name}`, config)
             ]);
         } catch (error) {
-            console.error(error);
+            console.error("❌ Error purge: ", error);
             if (error.code === 10008) { // Message too old
                 message.reply('Không thể xóa tin nhắn vì chúng quá cũ (>14 ngày).');
             } else {

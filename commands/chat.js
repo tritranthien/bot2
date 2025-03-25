@@ -5,7 +5,7 @@ const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'chats',
-    description: 'Liệt kê danh sách cuộc trò chuyện đã lưu của bạn.',
+    description: 'Liệt kê danh sách cuộc trò chuyện đã lưu của bạn. 📚',
     
     async execute(message, args, config, logModAction, sendEmbedMessage, client, model) {
         let userId = message.author.id;
@@ -20,7 +20,7 @@ module.exports = {
             const chats = await db.getUserChats(userId);
             
             if (chats.length === 0) {
-                return message.reply('Bạn chưa có cuộc trò chuyện nào.');
+                return message.reply('Bạn chưa có cuộc trò chuyện nào. 🪹');
             }
             
             // Tạo embed để hiển thị danh sách
