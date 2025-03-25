@@ -6,7 +6,7 @@ module.exports = {
     name: 'help',
     description: 'Xem danh sách lệnh quản lý server. 📚',
     async execute(message, args, config) {
-        const commandFiles = fs.readdirSync(path.resolve(__dirname)).filter(file => file.endsWith('.js') && file !== 'help.js');
+        const commandFiles = fs.readdirSync(path.resolve(__dirname)).filter(file => file.endsWith('.js')  && !file.startsWith('_') && file !== 'help.js');
         let helpText = '**Lệnh Quản Lý Server 📚**\n';
 
         for (const file of commandFiles) {

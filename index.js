@@ -16,7 +16,9 @@ const commandFiles = fs.readdirSync('./commands')
 const commands = new Collection();
 
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
+  const filePath = `./commands/${file}`;  
+  delete require.cache[require.resolve(filePath)];
+  const command = require(filePath);
   commands.set(command.name, command);
   console.log(`✅ Loaded command: ${command.name}`);
 }
