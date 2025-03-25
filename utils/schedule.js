@@ -36,7 +36,7 @@ const scheduleNextMessage = (client, config) => {
     }
 
     const { nextHour, timeUntil } = getNextScheduleTime(now, now.getHours());
-    console.log(`Lần chích điện ⚡⚡ tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa 🤗)`);
+    console.log(`⚡ Lần chích điện tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa 🤗)`);
 
     setTimeout(() => {
         const messages = {

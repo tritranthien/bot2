@@ -17,7 +17,7 @@ pool.on('error', (err) => {
 function initDb() {
     pool.connect((err, client, release) => {
         if (err) {
-            console.error(`Lỗi kết nối database: ${err.message}`);
+            console.error(`❌ Lỗi kết nối database: ${err.message}`);
             return;
         }
 
@@ -73,9 +73,9 @@ function initDb() {
         client.query(queries, (err) => {
             release();
             if (err) {
-                console.error('Lỗi khởi tạo cơ sở dữ liệu', err);
+                console.error('❌ Lỗi khởi tạo cơ sở dữ liệu', err);
             } else {
-                console.log('Đã khởi tạo cơ sở dữ liệu');
+                console.log('🔄️ Đã khởi tạo cơ sở dữ liệu');
             }
         });
     });
@@ -128,7 +128,7 @@ async function createNewChat(userId) {
             [userId, sequence, chatId, `Cuộc trò chuyện ${sequence}`]
         );
 
-        console.log(`Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${result.rows[0].id})`);
+        console.log(`✅ Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${result.rows[0].id})`);
 
         return {
             id: result.rows[0].id,
@@ -212,7 +212,7 @@ async function deleteUserChatHistory(userId) {
         // Commit transaction
         await client.query('COMMIT');
 
-        console.log(`Đã xóa ${result.rowCount} cuộc trò chuyện và reset sequence của người dùng ${userId}`);
+        console.log(`🗑️ Đã xóa ${result.rowCount} cuộc trò chuyện và reset sequence của người dùng ${userId}`);
 
         return {
             messagesDeleted: result.rowCount > 0,
@@ -221,7 +221,7 @@ async function deleteUserChatHistory(userId) {
     } catch (error) {
         // Rollback transaction nếu có lỗi
         await client.query('ROLLBACK');
-        console.error(`Lỗi khi xóa lịch sử trò chuyện: ${error.message}`);
+        console.error(`❌ Lỗi khi xóa lịch sử trò chuyện: ${error.message}`);
         throw error;
     } finally {
         client.release();
@@ -242,7 +242,7 @@ async function deleteGlobalChatHistory() {
         // Commit transaction
         await client.query('COMMIT');
 
-        console.log(`Đã xóa ${result.rowCount} cuộc trò chuyện`);
+        console.log(`🗑️ Đã xóa ${result.rowCount} cuộc trò chuyện`);
 
         return {
             messagesDeleted: result.rowCount > 0,
@@ -251,7 +251,7 @@ async function deleteGlobalChatHistory() {
     } catch (error) {
         // Rollback transaction nếu có lỗi
         await client.query('ROLLBACK');
-        console.error(`Lỗi khi xóa lịch sử trò chuyện: ${error.message}`);
+        console.error(`❌ Lỗi khi xóa lịch sử trò chuyện: ${error.message}`);
         throw error;
     } finally {
         client.release();
@@ -277,7 +277,7 @@ async function deleteChatById(userId, chatId) {
         );
 
         if (checkResult.rowCount === 0) {
-            throw new Error('Không tìm thấy cuộc trò chuyện hoặc bạn không có quyền xóa nó');
+            throw new Error('❌ Không tìm thấy cuộc trò chuyện hoặc bạn không có quyền xóa nó');
         }
 
         const dbChatId = checkResult.rows[0].id;
@@ -291,7 +291,7 @@ async function deleteChatById(userId, chatId) {
         // Commit transaction
         await client.query('COMMIT');
 
-        console.log(`Đã xóa cuộc trò chuyện ${chatId} của người dùng ${userId}`);
+        console.log(`🗑️ Đã xóa cuộc trò chuyện ${chatId} của người dùng ${userId}`);
 
         return {
             success: true,
@@ -477,7 +477,7 @@ async function updateChatTime(userId, chatId) {
             'UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2',
             [chatId, userId]
         );
-        console.log(`Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId} của người dùng ${userId}`);
+        console.log(`🔃 Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId} của người dùng ${userId}`);
         return true;
     } finally {
         client.release();
@@ -491,7 +491,7 @@ async function updateGlobalChatTime(chatId) {
             'UPDATE global_chats SET updated_at = CURRENT_TIMESTAMP WHERE id = $1',
             [chatId]
         );
-        console.log(`Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId}`);
+        console.log(`🔃 Đã cập nhật thời gian truy cập cho cuộc trò chuyện ${chatId}`);
         return true;
     } finally {
         client.release();
@@ -519,9 +519,9 @@ async function getMessagesFromChat(chatDbId, limit = 10) {
 // Đóng kết nối database
 function closeDb() {
     pool.end().then(() => {
-        console.log('Đã đóng kết nối database.');
+        console.log('🚪 Đã đóng kết nối database.');
     }).catch(err => {
-        console.error(`Lỗi đóng database: ${err.message}`);
+        console.error(`❌ Lỗi đóng database: ${err.message}`);
     });
 }
 
@@ -572,10 +572,10 @@ async function summarizeAndUpdateChatTitle(userId, model) {
         // Cập nhật tiêu đề
         await updateChatTitle(currentChat.id, title);
 
-        console.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
+        console.log(`✅ Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
 
     } catch (error) {
-        console.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
+        console.error(`❌ Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
     } finally {
         client.release();
     }
@@ -647,10 +647,10 @@ async function summarizeAndUpdateGlobalChatTitle(userId, model) {
         // Cập nhật tiêu đề
         await updateChatTitle(currentChat.id, title, 'global_chats');
 
-        console.log(`Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
+        console.log(`✅ Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
 
     } catch (error) {
-        console.error(`Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
+        console.error(`❌ Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
     } finally {
         client.release();
     }
@@ -720,7 +720,7 @@ async function getGlobalChatList() {
         const chats = await getGlobalChats();
         return chats; // Trả về danh sách chats cho người dùng sử dụn
     } catch (error) {
-        console.error(`Lỗi khi lấy danh sách cuộc trò chuyện: ${error.message}`);
+        console.error(`❌ Lỗi khi lấy danh sách cuộc trò chuyện: ${error.message}`);
         return [];
     }
 }
