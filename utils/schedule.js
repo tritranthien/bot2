@@ -9,7 +9,7 @@ const sendChannelMessage = (client, config, message) => {
     if (channel) {
         channel.send(message);
     } else {
-        logger.log('Không tìm thấy kênh.');
+        console.log('Không tìm thấy kênh.');
     }
 };
 
@@ -30,13 +30,13 @@ const scheduleNextMessage = (client, config) => {
     const day = now.getDay();
 
     if (day === 0 || day === 6) {
-        logger.log("Hôm nay là cuối tuần, không gửi tin nhắn.");
+        console.log("Hôm nay là cuối tuần, không gửi tin nhắn.");
         setTimeout(() => scheduleNextMessage(client, config), ONE_DAY_MS);
         return;
     }
 
     const { nextHour, timeUntil } = getNextScheduleTime(now, now.getHours());
-    logger.log(`Lần gửi tin tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa)`);
+    console.log(`Lần chích điện ⚡⚡ tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa 🤗)`);
 
     setTimeout(() => {
         const messages = {

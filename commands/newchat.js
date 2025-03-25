@@ -1,6 +1,6 @@
 // commands/newchat.js
 const db = require('../utils/database');
-const logger = require('../utils/logger');
+require('../utils/logger');
 
 module.exports = {
     name: 'newchat',
@@ -17,7 +17,7 @@ module.exports = {
             await message.reply('Đã tạo cuộc trò chuyện mới. Bạn có thể bắt đầu trò chuyện với lệnh `!ai`.');
             
             // Ghi log
-            logger.log(`User ${message.author.tag} (${userId}) đã tạo cuộc trò chuyện mới.`);
+            console.log(`User ${message.author.tag} (${userId}) đã tạo cuộc trò chuyện mới.`);
             
             // LOẠI BỎ phần xóa lệnh của người dùng
             // const fetchedMessage = await message.channel.messages.fetch(message.id).catch(() => null);
@@ -25,7 +25,7 @@ module.exports = {
             //     await message.delete();
             // }
         } catch (error) {
-            logger.error(`Lỗi khi tạo cuộc trò chuyện mới: ${error.message}`);
+            console.error(`Lỗi khi tạo cuộc trò chuyện mới: ${error.message}`);
             message.reply('Có lỗi xảy ra khi tạo cuộc trò chuyện mới. Vui lòng thử lại sau.');
         }
     },

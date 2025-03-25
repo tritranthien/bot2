@@ -1,4 +1,5 @@
 // commands/ban.js
+require('../utils/logger');
 module.exports = {
     name: 'ban',
     description: 'Ban a user from the server.',

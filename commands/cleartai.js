@@ -1,6 +1,6 @@
 // commands/clearai.js
 const db = require('../utils/database');
-const logger = require('../utils/logger');
+require('../utils/logger');
 
 module.exports = {
     name: 'clearai',
@@ -33,7 +33,7 @@ module.exports = {
                     await message.reply(`✅ Đã xóa cuộc trò chuyện ${chatId}.`);
                     
                     // Ghi log
-                    logger.log(`User ${message.author.tag} (${userId}) đã xóa cuộc trò chuyện ${chatId}.`);
+                    console.log(`User ${message.author.tag} (${userId}) đã xóa cuộc trò chuyện ${chatId}.`);
                 } catch (error) {
                     // Xóa thông báo đang xử lý
                     await processingMsg.delete().catch(() => {});
@@ -59,10 +59,10 @@ module.exports = {
                 await message.reply('✅ Đã xóa tất cả lịch sử trò chuyện của bạn với AI. Một cuộc trò chuyện mới đã được tạo.');
                 
                 // Ghi log
-                logger.log(`User ${message.author.tag} (${userId}) đã xóa toàn bộ lịch sử trò chuyện AI.`);
+                console.log(`User ${message.author.tag} (${userId}) đã xóa toàn bộ lịch sử trò chuyện AI.`);
             }
         } catch (error) {
-            logger.error(`Lỗi khi xóa lịch sử trò chuyện: ${error.message}`);
+            console.error(`Lỗi khi xóa lịch sử trò chuyện: ${error.message}`);
             message.reply('❌ Có lỗi xảy ra khi xóa lịch sử trò chuyện. Vui lòng thử lại sau.');
         }
     },

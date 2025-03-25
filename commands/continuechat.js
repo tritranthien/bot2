@@ -1,6 +1,6 @@
 // commands/continuechat.js
 const db = require('../utils/database');
-const logger = require('../utils/logger');
+require('../utils/logger');
 
 module.exports = {
     name: 'continuechat',
@@ -51,10 +51,10 @@ module.exports = {
             await message.reply(`Đã chuyển đến cuộc trò chuyện: **${targetChat.title || chatId}**\n\nCác tin nhắn gần đây:\n${messagePreview}\n\nBạn có thể tiếp tục trò chuyện với lệnh \`!ai\`.`);
             
             // Ghi log
-            logger.log(`User ${message.author.tag} (${userId}) đã tiếp tục cuộc trò chuyện ${chatId}`);
+            console.log(`User ${message.author.tag} (${userId}) đã tiếp tục cuộc trò chuyện ${chatId}`);
             
         } catch (error) {
-            logger.error(`Lỗi khi tiếp tục cuộc trò chuyện: ${error.message}`);
+            console.error(`Lỗi khi tiếp tục cuộc trò chuyện: ${error.message}`);
             message.reply('Có lỗi xảy ra khi chuyển cuộc trò chuyện. Vui lòng thử lại sau.');
         }
     },
