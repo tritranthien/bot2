@@ -68,6 +68,11 @@ function initDb() {
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 chat_id INTEGER NOT NULL REFERENCES global_chats(id) ON DELETE CASCADE
             );
+            CREATE TABLE IF NOT EXISTS settings (
+                id SERIAL PRIMARY KEY,
+                key TEXT UNIQUE NOT NULL,
+                value TEXT
+            );
         `;
 
         client.query(queries, (err) => {
@@ -742,6 +747,39 @@ async function getGlobalChatMessages(chatId, limit = 10) {
     }
 }
 
+const saveChannelId = async (channelID) => {
+    const query = `
+        INSERT INTO settings (key, value) 
+        VALUES ('channel-spam-bot', $1)
+        ON CONFLICT (key) 
+        DO UPDATE SET value = EXCLUDED.value;
+    `;
+    
+    try {
+        await pool.query(query, [channelID]);
+        console.log('✅ Lưu Channel ID thành công:', channelID);
+    } catch (err) {
+        console.error('❌ Lỗi khi lưu Channel ID:', err);
+    }
+};
+
+const getChannelId = async () => {
+    try {
+        const result = await pool.query(
+            `SELECT value FROM settings WHERE key = 'channel-spam-bot'`
+        );
+
+        if (result.rows.length > 0) {
+            return result.rows[0].value;
+        } else {
+            return null; // Không tìm thấy Channel ID
+        }
+    } catch (error) {
+        console.error("Lỗi khi lấy Channel ID:", error);
+        throw error;
+    }
+};
+
 module.exports = {
     initDb,
     createNewChat,
@@ -765,5 +803,7 @@ module.exports = {
     getGlobalChats,
     updateGlobalChatTime,
     deleteGlobalChatById,
-    deleteGlobalChatHistory
+    deleteGlobalChatHistory,
+    saveChannelId,
+    getChannelId
 };

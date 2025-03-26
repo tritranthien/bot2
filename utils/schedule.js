@@ -1,4 +1,9 @@
 require('../utils/logger');
+if (process.env.APP_ENV == 'local') {
+    const { db, getChannelId } = require("./sddatabase3");
+} else {
+    const { db, getChannelId } = require("./database");
+}
 
 // Danh sách giờ gửi tin nhắn
 const SEND_HOURS = [8, 10, 12, 14, 16, 18];
@@ -10,8 +15,18 @@ const MESSAGES = {
 };
 
 const sendChannelMessage = (client, config, message) => {
-    const channel = client.channels.cache.get(config.aiChannel);
-    channel?.send(message) || console.log('Không tìm thấy kênh. 🚫🚫🚫');
+    getChannelId()
+        .then((channelId) => {
+            const channel = channelId
+                ? client.channels.cache.get(channelId) // Lấy từ DB
+                : client.channels.cache.get(config.aiChannel); // Dùng fallback
+            if (channel) {
+                channel.send(message);
+            } else {
+                console.log("Không tìm thấy kênh. 🚫🚫🚫");
+            }
+        })
+        .catch((error) => console.error("Lỗi khi lấy Channel ID:", error));
 };
 
 const getNextScheduleTime = () => {

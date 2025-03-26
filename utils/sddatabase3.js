@@ -13,6 +13,20 @@ const db = new sqlite3.Database(dbPath, (err) => {
     console.log('✅ Đã kết nối tới SQLite database.');
 });
 
+db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT UNIQUE NOT NULL,
+        value TEXT
+    )`, (err) => {
+        if (err) {
+            console.error("❌ Lỗi khi tạo bảng settings:", err.message);
+        } else {
+            console.log("✅ Bảng 'settings' đã sẵn sàng.");
+        }
+    });
+});
+
 function initDb() {
     db.serialize(() => {
         // Bảng user_sequences để lưu trữ sequence cho mỗi user
@@ -567,6 +581,37 @@ async function getMessagesFromChat(chatDbId, limit = 10) {
     });
 }
 
+const saveChannelId = async (channelId) => {
+    return new Promise((resolve, reject) => {
+        db.run(
+            `INSERT INTO settings (key, value) 
+             VALUES ('channel-spam-bot', ?) 
+             ON CONFLICT(key) DO UPDATE SET value = ?;`, // Cập nhật giá trị trực tiếp
+            [channelId, channelId], // Thêm giá trị cho UPDATE
+            function (err) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(true);
+            }
+        );
+    });
+};
+
+const getChannelId = () => {
+    return new Promise((resolve, reject) => {
+        db.get("SELECT value FROM settings WHERE key = 'channel-spam-bot'", [], (err, row) => {
+            if (err) {
+                console.error("❌ Lỗi khi lấy Channel ID:", err);
+                reject(err);
+            } else {
+                resolve(row ? row.value : null);
+            }
+        });
+    });
+};
+
 module.exports = {
     initDb,
     createNewChat,
@@ -580,5 +625,7 @@ module.exports = {
     getCurrentChat,
     deleteChatById,
     updateChatTime,
-    getMessagesFromChat
+    getMessagesFromChat,
+    saveChannelId,
+    getChannelId
 };
