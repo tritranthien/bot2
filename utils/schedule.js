@@ -18,19 +18,26 @@ const sendChannelMessage = (client, config, message) => {
 const getNextScheduleTime = () => {
     const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
     const hours = nowVN.getHours();
-    const minutes = nowVN.getMinutes();
 
-    let nextHour = SEND_HOURS.find(h => h > hours || (h === hours && minutes < 1));
+    let nextHour = SEND_HOURS.find(h => h > hours);
+
     const nextDate = new Date(nowVN);
-    
+
     if (!nextHour) {
-        nextHour = SEND_HOURS[0]; // Chọn giờ đầu tiên của ngày mai nếu hết giờ
+        nextHour = SEND_HOURS[0]; // Chuyển sang ngày mai nếu đã hết giờ
         nextDate.setDate(nextDate.getDate() + 1);
     }
 
     nextDate.setHours(nextHour, 0, 0, 0);
     
-    const timeUntil = Math.max(nextDate - nowVN, 1000);
+    let timeUntil = nextDate - nowVN;
+
+    if (timeUntil < 60000) { 
+        timeUntil = 60000; // Đặt tối thiểu là 1 phút
+    }
+
+    console.log(`🕒 Thời gian hiện tại: ${nowVN}`);
+    console.log(`📌 Giờ tiếp theo được chọn: ${nextHour}, sẽ gửi sau ${Math.round(timeUntil / 60000)} phút`);
 
     return { nextHour, timeUntil };
 };
@@ -47,7 +54,10 @@ const scheduleNextMessage = (client, config) => {
 
         sendChannelMessage(client, config,
             `<@${config.sonId}>, đã tới thời gian chích điện định kỳ, đưa cổ đây, <${config.camGif}> "rẹt rẹt rẹt ...⚡⚡⚡"`);
-
+        
+        console.log(`✅ Tin nhắn cho ${nextHour}:00 đã được gửi thành công!`);
+        console.log(`⏳ Đang lên lịch cho lần gửi tiếp theo...`);
+        
         scheduleNextMessage(client, config);
     }, timeUntil);
 };
