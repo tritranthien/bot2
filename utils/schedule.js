@@ -18,13 +18,13 @@ const sendChannelMessage = async (client, config, message) => {
     try {
         const channelId = await getChannelId();
         const channel = client.channels.cache.get(channelId || config.aiChannel);
-
+        console.log("Kênh:", channelId);
         if (!channel) {
             console.log("Không tìm thấy kênh. 🚫🚫🚫");
             return;
         }
 
-        await channel.send(message);
+        channel.send(message);
     } catch (error) {
         console.error("Lỗi khi gửi tin nhắn:", error);
     }
