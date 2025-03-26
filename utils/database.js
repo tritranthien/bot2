@@ -63,6 +63,7 @@ function initDb() {
             CREATE TABLE IF NOT EXISTS global_chat_messages (
                 id SERIAL PRIMARY KEY,
                 user_id TEXT NOT NULL,
+                name TEXT,
                 role TEXT NOT NULL,
                 content TEXT NOT NULL,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -661,16 +662,16 @@ async function summarizeAndUpdateGlobalChatTitle(userId, model) {
     }
 }
 
-async function addGlobalChatMessage(userId, role, content) {
+async function addGlobalChatMessage(userId, role, content, name = "") {
     const client = await pool.connect();
     try {
         const chatId = await getCurrentGlobalChatId(userId);
 
         const result = await client.query(
-            `INSERT INTO global_chat_messages (chat_id, user_id, role, content) 
-             VALUES ($1, $2, $3, $4) 
+            `INSERT INTO global_chat_messages (chat_id, user_id, role, content, name) 
+             VALUES ($1, $2, $3, $4, $5) 
              RETURNING id`,
-            [chatId, userId, role, content]
+            [chatId, userId, role, content, name]
         );
 
         // Cập nhật thời gian cập nhật mới nhất của cuộc trò chuyện
@@ -734,7 +735,7 @@ async function getGlobalChatMessages(chatId, limit = 10) {
     const client = await pool.connect();
     try {
         const result = await client.query(
-            `SELECT role, content FROM global_chat_messages 
+            `SELECT role, content, user_id, name FROM global_chat_messages 
              WHERE chat_id = $1 
              ORDER BY id DESC LIMIT $2`,
             [chatId, limit * 2]

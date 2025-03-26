@@ -107,7 +107,7 @@ module.exports = {
 
             for (const chat of chatList) {
                 embed.addFields({
-                    name: `Chat ID: ${chat.chatId}`,
+                    name: `Chat ID: ${chat.chat_id}`,
                     value: `Số tin nhắn: ${chat.messageCount}`,
                     inline: false
                 });
@@ -131,7 +131,7 @@ module.exports = {
             await message.reply('Đã tạo cuộc trò chuyện mới. Bạn có thể bắt đầu trò chuyện với lệnh `!gai`.');
             
             // Ghi log
-            console.log(`User ${message.author.tag} (${userId}) đã tạo cuộc trò chuyện mới.`);
+            console.log(`User ${message.author.tag} (${senderId}) đã tạo cuộc trò chuyện mới.`);
             
             // LOẠI BỎ phần xóa lệnh của người dùng
             // const fetchedMessage = await message.channel.messages.fetch(message.id).catch(() => null);
@@ -148,7 +148,6 @@ module.exports = {
         if (!chatId || !chatId.startsWith('g')) {
             return message.reply('💁 Vui lòng cung cấp Chat ID hợp lệ (ví dụ: g1, g2).');
         }
-
         try {
             const chats = await db.getGlobalChats();
             const targetChat = chats.find(chat => chat.chat_id === chatId);
@@ -159,8 +158,7 @@ module.exports = {
             
             // Cập nhật thời gian truy cập để đặt cuộc trò chuyện này thành hiện tại
             await db.updateGlobalChatTime(targetChat.id);
-            const messages = await db.getGlobalChatMessages(chatId, 5);
-
+            const messages = await db.getGlobalChatMessages(targetChat.id, 5);
             if (messages.length === 0) {
                 return message.reply(`Không tìm thấy tin nhắn trong chat ${chatId}. 🙈`);
             }
@@ -177,8 +175,9 @@ module.exports = {
 
             messages.forEach(msg => {
                 const roleName = msg.role === 'user' ? '👤' : '🤖';
+                const uid = msg.role === 'user'? msg.name : "";
                 embed.addFields({
-                    name: `${roleName} ${msg.user_id}`,
+                    name: `${roleName} ${uid}`,
                     value: msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''),
                     inline: false
                 });
@@ -199,6 +198,8 @@ module.exports = {
         }
 
         const userId = message.author.id;
+        const userName = message.author.displayName;
+        
         const prompt = args.join(' ');
 
         try {
@@ -222,8 +223,8 @@ module.exports = {
                     const content = result.response.text();
                     
                     // Lưu cả câu hỏi và câu trả lời vào database
-                    await db.addGlobalChatMessage(userId, 'user', prompt);
-                    await db.addGlobalChatMessage(userId, 'model', content);
+                    await db.addGlobalChatMessage(userId, 'user', prompt, userName);
+                    await db.addGlobalChatMessage(userId, 'model', content, userName);
                     
                     // Tóm tắt và cập nhật tiêu đề cuộc trò chuyện
                     await db.summarizeAndUpdateGlobalChatTitle(userId, model);
@@ -263,10 +264,10 @@ module.exports = {
                 const content = result.response.text();
                 
                 // Lưu tin nhắn của người dùng vào database
-                await db.addGlobalChatMessage(userId, 'user', prompt);
+                await db.addGlobalChatMessage(userId, 'user', prompt, userName);
                 
                 // Lưu câu trả lời của AI vào database
-                await db.addGlobalChatMessage(userId, 'model', content);
+                await db.addGlobalChatMessage(userId, 'model', content, userName);
                 
                 // Tóm tắt và cập nhật tiêu đề cuộc trò chuyện
                 await db.summarizeAndUpdateGlobalChatTitle(userId, model);
@@ -300,8 +301,8 @@ module.exports = {
                     const content = result.response.text();
                     
                     // Lưu cả câu hỏi và câu trả lời vào database
-                    await db.addGlobalChatMessage(userId, 'user', prompt);
-                    await db.addGlobalChatMessage(userId, 'model', content);
+                    await db.addGlobalChatMessage(userId, 'user', prompt, userName);
+                    await db.addGlobalChatMessage(userId, 'model', content, userName);
                     
                     // Tóm tắt và cập nhật tiêu đề cuộc trò chuyện
                     await db.summarizeAndUpdateGlobalChatTitle(userId, model);
@@ -339,8 +340,8 @@ module.exports = {
 
             for (const chat of chatList) {
                 embed.addFields({
-                    name: `Chat ID: ${chat.chatId}`,
-                    value: `Số tin nhắn: ${chat.messageCount}\nTóm tắt: ${chat.summary}`,
+                    name: `Chat ID: ${chat.chat_id}`,
+                    value: `Tóm tắt: ${chat.title}`,
                     inline: false
                 });
             }
