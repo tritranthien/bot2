@@ -28,6 +28,8 @@ Tạo file `.env` và thêm thông tin cần thiết:
 AI_API_KEY=your-ai-api-key
 DISCORD_TOKEN=your-bot-token
 DATABASE_URL=your-database-url
+APP_ENV=your-app-env # local or production
+APP_URL=your-app-url
 ```
 🚨 **Lưu ý:** Không chia sẻ token công khai! Hãy đảm bảo `.env` có trong `.gitignore`.
 

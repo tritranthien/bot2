@@ -14,19 +14,20 @@ const MESSAGES = {
     18: () => '⏱️ Bây giờ là 6h chiều, coookkkkkkkkkk 🏡🏡🏡 🍳🍲🍜'
 };
 
-const sendChannelMessage = (client, config, message) => {
-    getChannelId()
-        .then((channelId) => {
-            const channel = channelId
-                ? client.channels.cache.get(channelId) // Lấy từ DB
-                : client.channels.cache.get(config.aiChannel); // Dùng fallback
-            if (channel) {
-                channel.send(message);
-            } else {
-                console.log("Không tìm thấy kênh. 🚫🚫🚫");
-            }
-        })
-        .catch((error) => console.error("Lỗi khi lấy Channel ID:", error));
+const sendChannelMessage = async (client, config, message) => {
+    try {
+        const channelId = await getChannelId();
+        const channel = client.channels.cache.get(channelId || config.aiChannel);
+
+        if (!channel) {
+            console.log("Không tìm thấy kênh. 🚫🚫🚫");
+            return;
+        }
+
+        await channel.send(message);
+    } catch (error) {
+        console.error("Lỗi khi gửi tin nhắn:", error);
+    }
 };
 
 const getNextScheduleTime = () => {
