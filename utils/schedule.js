@@ -2,7 +2,6 @@ require('../utils/logger');
 
 // Danh sách giờ gửi tin nhắn
 const SEND_HOURS = [8, 10, 12, 14, 16, 18];
-const ONE_DAY_MS = 86400000;
 
 const MESSAGES = {
     12: (config) => `<@${config.sonId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm 🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
@@ -29,20 +28,27 @@ const getNextScheduleTime = () => {
     }
 
     nextDate.setHours(nextHour, 0, 0, 0);
-    
+
     let timeUntil = nextDate - nowVN;
 
-    if (timeUntil < 60000) { 
+    if (timeUntil < 60000) {
         timeUntil = 60000; // Đặt tối thiểu là 1 phút
     }
 
     console.log(`🕒 Thời gian hiện tại: ${nowVN}`);
-    console.log(`📌 Giờ tiếp theo được chọn: ${nextHour}, sẽ gửi sau ${Math.round(timeUntil / 60000)} phút`);
 
     return { nextHour, timeUntil };
 };
 
 const scheduleNextMessage = (client, config) => {
+    const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
+    const dayOfWeek = nowVN.getDay(); // 0 là Chủ Nhật, 6 là Thứ Bảy
+
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+        console.log('😴 Hôm nay là Thứ Bảy hoặc Chủ Nhật, không lên lịch gửi tin nhắn.');
+        return;
+    }
+
     const { nextHour, timeUntil } = getNextScheduleTime();
     console.log(`⚡ tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa 🤗)`);
     setTimeout(() => {
@@ -50,14 +56,14 @@ const scheduleNextMessage = (client, config) => {
         const specialMessage = MESSAGES[nextHour]?.(config);
         if (specialMessage) {
             sendChannelMessage(client, config, specialMessage);
+        } else if (SEND_HOURS.includes(nextHour)) {
+            sendChannelMessage(client, config,
+                `<@${config.sonId}>, đã tới thời gian chích điện định kỳ, đưa cổ đây, <${config.camGif}> "rẹt rẹt rẹt ...⚡⚡⚡"`);
         }
 
-        sendChannelMessage(client, config,
-            `<@${config.sonId}>, đã tới thời gian chích điện định kỳ, đưa cổ đây, <${config.camGif}> "rẹt rẹt rẹt ...⚡⚡⚡"`);
-        
         console.log(`✅ Tin nhắn cho ${nextHour}:00 đã được gửi thành công!`);
         console.log(`⏳ Đang lên lịch cho lần gửi tiếp theo...`);
-        
+
         scheduleNextMessage(client, config);
     }, timeUntil);
 };
