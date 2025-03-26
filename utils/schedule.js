@@ -19,20 +19,24 @@ const getNextScheduleTime = () => {
     const hours = nowVN.getHours();
     const minutes = nowVN.getMinutes();
 
-    const nextHour = SEND_HOURS.find(h => h > hours || (h === hours && minutes < 1)) || SEND_HOURS[0];
+    let nextHour = SEND_HOURS.find(h => h > hours || (h === hours && minutes < 1));
     const nextDate = new Date(nowVN);
     
-    if (!SEND_HOURS.find(h => h > hours)) {
+    if (!nextHour) {
+        nextHour = SEND_HOURS[0]; // Nếu đã qua hết các giờ, chọn giờ đầu tiên ngày mai
         nextDate.setDate(nextDate.getDate() + 1);
     }
-    
+
     nextDate.setHours(nextHour, 0, 0, 0);
-    return { nextHour, timeUntil: nextDate - nowVN };
+    
+    // Đảm bảo timeUntil luôn dương
+    const timeUntil = Math.max(nextDate - nowVN, 1000);
+
+    return { nextHour, timeUntil };
 };
 
 const scheduleNextMessage = (client, config) => {
     const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
-    
     if ([0, 6].includes(nowVN.getDay())) {
         console.log("Hôm nay là cuối tuần, không gửi tin nhắn. 🎆🎆🎆");
         setTimeout(() => scheduleNextMessage(client, config), ONE_DAY_MS);

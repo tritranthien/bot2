@@ -64,8 +64,8 @@ const scheduleLogDeletion = () => {
     const nextRunUTC = new Date(nextRunVN.getTime() - VN_OFFSET);
     const delay = nextRunUTC.getTime() - now.getTime();
 
-    console.log(`⏭️  Next log deletion (VN): ${nextRunVN.toLocaleString("vi-VN")}`);
-    console.log(`⏭️  Next log deletion (UTC): ${nextRunUTC.toISOString()}`);
+    console.log(`⏭️ Next log deletion (VN): ${nextRunVN.toLocaleString("vi-VN")}`);
+    console.log(`⏭️ Next log deletion (UTC): ${nextRunUTC.toISOString()}`);
 
     const deleteAndSchedule = () => {
         fs.unlink(LOG_FILE, err => {
