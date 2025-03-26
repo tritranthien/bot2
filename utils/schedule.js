@@ -1,10 +1,11 @@
 require('../utils/logger');
 
-// Constant configurations
+// Danh sách giờ gửi tin nhắn
 const SEND_HOURS = [8, 10, 12, 14, 16, 18];
 const ONE_DAY_MS = 86400000;
+
 const MESSAGES = {
-    12: (config) => `<@${config.sonId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm  🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
+    12: (config) => `<@${config.sonId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm 🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
     14: (config) => `<@${config.sonId}>, 2h chiều rồi, có đặt nước không? 🧃🚰`,
     18: () => '⏱️ Bây giờ là 6h chiều, coookkkkkkkkkk 🏡🏡🏡 🍳🍲🍜'
 };
@@ -23,30 +24,22 @@ const getNextScheduleTime = () => {
     const nextDate = new Date(nowVN);
     
     if (!nextHour) {
-        nextHour = SEND_HOURS[0]; // Nếu đã qua hết các giờ, chọn giờ đầu tiên ngày mai
+        nextHour = SEND_HOURS[0]; // Chọn giờ đầu tiên của ngày mai nếu hết giờ
         nextDate.setDate(nextDate.getDate() + 1);
     }
 
     nextDate.setHours(nextHour, 0, 0, 0);
     
-    // Đảm bảo timeUntil luôn dương
     const timeUntil = Math.max(nextDate - nowVN, 1000);
 
     return { nextHour, timeUntil };
 };
 
 const scheduleNextMessage = (client, config) => {
-    const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
-    if ([0, 6].includes(nowVN.getDay())) {
-        console.log("Hôm nay là cuối tuần, không gửi tin nhắn. 🎆🎆🎆");
-        setTimeout(() => scheduleNextMessage(client, config), ONE_DAY_MS);
-        return;
-    }
-
     const { nextHour, timeUntil } = getNextScheduleTime();
-    console.log(`⚡ Lần chích điện tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa 🤗)`);
-
+    console.log(`⚡ tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa 🤗)`);
     setTimeout(() => {
+        console.log(`📢 Đang gửi tin nhắn cho ${nextHour}:00`);
         const specialMessage = MESSAGES[nextHour]?.(config);
         if (specialMessage) {
             sendChannelMessage(client, config, specialMessage);
