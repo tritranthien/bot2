@@ -1,8 +1,8 @@
 // commands/ai.js
 if (process.env.APP_ENV == 'local') {
-    const db = require('../utils/sddatabase3');
+    const db = require('../utils/sddatabase3.js');
 } else {
-    const db = require('../utils/database');
+    const db = require('../utils/database.js');
 }
 require('../utils/logger');
 
