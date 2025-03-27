@@ -1,8 +1,9 @@
 require('../utils/logger');
-if (process.env.APP_ENV == 'local') {
-    const { db, getChannelId } = require("./sddatabase3");
+let db, getChannelId, saveChannelId;
+if (process.env.APP_ENV === 'local') {
+  ({ db, getChannelId, saveChannelId } = require("./sddatabase3"));
 } else {
-    const { db, getChannelId } = require("./database");
+  ({ db, getChannelId, saveChannelId } = require("./database"));
 }
 
 // Danh sách giờ gửi tin nhắn
@@ -57,6 +58,8 @@ const getNextScheduleTime = () => {
 };
 
 const scheduleNextMessage = (client, config) => {
+    sendChannelMessage(client, config, 'test');
+    return;
     const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
     const dayOfWeek = nowVN.getDay(); // 0 là Chủ Nhật, 6 là Thứ Bảy
 
