@@ -14,14 +14,14 @@ function getUniqueRandomName() {
     let availableNames = randomNames.filter(name => !usedNames.has(name));
 
     if (availableNames.length === 0) {
-        console.log("[INFO] Danh sách tên đã hết, reset lại...");
+        console.log("📃 Danh sách tên đã hết, reset lại...");
         usedNames.clear(); // Reset nếu hết tên
         availableNames = [...randomNames];
     }
 
     const randomName = availableNames[Math.floor(Math.random() * availableNames.length)];
     usedNames.add(randomName);
-    console.log(`[DEBUG] Chọn tên: ${randomName}`);
+    console.log(`🕵️ Chọn tên: ${randomName}`);
     return randomName;
 }
 
@@ -35,7 +35,7 @@ async function sendLoadingBar(message) {
 
     let msg = await message.channel.send(`📥 Downloading sensitive data... ${progressBar[0]}`);
     for (let i = 1; i < progressBar.length; i++) {
-        await new Promise(resolve => setTimeout(resolve, 400));
+        await new Promise(resolve => setTimeout(resolve, 300));
         await msg.edit(`📥 Downloading sensitive data... ${progressBar[i]}`);
     }
 }
@@ -52,6 +52,10 @@ module.exports = {
 
         if (member.id === message.client.user.id) {
             return message.reply("🚫 Bạn không thể hack tôi đâu! Tôi là AI bất khả xâm phạm! 🤖🔥");
+        }
+
+        if (!member.manageable) {
+            return message.reply(`⚠️ Không thể hack ${member} này, người này là chúa trời đã tạo ra tôi! .`);
         }
 
         console.log(`[INFO] Đang hack user: ${member.user.username} (${member.id})`);
@@ -94,7 +98,7 @@ module.exports = {
             await member.setNickname(hackedNickname);
             message.channel.send(`🛠️ Biệt danh của **${member}** đã bị thay đổi từ **"${oldNickname}"** thành **"${hackedNickname}"**!`);
         } catch (error) {
-            console.error(`[ERROR] Không thể đổi biệt danh của ${member.user.username}:`, error);
+            console.error(`❌ Không thể đổi biệt danh của ${member.user.username}:`, error);
             message.channel.send(`❌ Không thể đổi biệt danh của ${member} (Có thể bot không có quyền).`);
         }
     },
