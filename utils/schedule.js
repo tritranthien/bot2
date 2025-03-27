@@ -58,8 +58,6 @@ const getNextScheduleTime = () => {
 };
 
 const scheduleNextMessage = (client, config) => {
-    sendChannelMessage(client, config, 'test');
-    return;
     const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
     const dayOfWeek = nowVN.getDay(); // 0 là Chủ Nhật, 6 là Thứ Bảy
 
