@@ -76,7 +76,7 @@ async function sendDeployMessage() {
     if (channel) {
       const now = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
       await channel.send(`🚀 Bot đã deploy lúc: **${now}** (GMT+7)`);
-      console.log(`🚀 Bot đã deploy lúc: ${now} (GMT+7)`);
+      console.log(`🚀 Bot đã deploy lúc: ${now} VN`);
     } else {
       console.error("❌ Không tìm thấy kênh.");
     }
