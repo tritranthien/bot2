@@ -749,35 +749,43 @@ async function getGlobalChatMessages(chatId, limit = 10) {
 }
 
 const saveChannelId = async (channelID) => {
-    const query = `
-        INSERT INTO settings (key, value) 
-        VALUES ('channel-spam-bot', $1)
-        ON CONFLICT (key) 
-        DO UPDATE SET value = EXCLUDED.value;
-    `;
-    
-    try {
-        await pool.query(query, [channelID]);
-        console.log('✅ Lưu Channel ID thành công:', channelID);
-    } catch (err) {
-        console.error('❌ Lỗi khi lưu Channel ID:', err);
-    }
+    await saveSetting('channel-spam-bot', channelID);
 };
 
 const getChannelId = async () => {
+    return await getSetting('channel-spam-bot');
+};
+
+const saveSetting = async (key, value) => {
+    const query = `
+        INSERT INTO settings (key, value) 
+        VALUES ($1, $2)
+        ON CONFLICT (key) 
+        DO UPDATE SET value = EXCLUDED.value;
+    `;
+
+    try {
+        await pool.query(query, [key, value]);
+        console.log(`✅ Lưu setting thành công: ${key} = ${value}`);
+    } catch (err) {
+        console.error(`❌ Lỗi khi lưu setting (${key}):`, err);
+    }
+};
+
+const getSetting = async (key) => {
     try {
         const result = await pool.query(
-            `SELECT value FROM settings WHERE key = 'channel-spam-bot'`
+            `SELECT value FROM settings WHERE key = $1`, [key]
         );
 
         if (result.rows.length > 0) {
             return result.rows[0].value;
         } else {
-            return null; // Không tìm thấy Channel ID
+            return null; // Không tìm thấy giá trị
         }
     } catch (error) {
-        console.error("Lỗi khi lấy Channel ID:", error);
-        throw error;
+        console.error(`❌ Lỗi khi lấy setting (${key}):`, error);
+        return null;
     }
 };
 
@@ -806,5 +814,7 @@ module.exports = {
     deleteGlobalChatById,
     deleteGlobalChatHistory,
     saveChannelId,
-    getChannelId
+    getChannelId,
+    saveSetting,
+    getSetting
 };

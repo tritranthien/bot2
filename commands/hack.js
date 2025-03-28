@@ -1,5 +1,6 @@
 const hackedUsers = new Map(); // Lưu biệt danh cũ của user
 const usedNames = new Set(); // Lưu các tên đã được sử dụng
+const { saveSetting } = require("../utils/database.js");
 
 const randomNames = [
     "KevinMitnick", "AnonymousX", "LulzSec", "SnowdenX", "MafiaBoy",
@@ -95,6 +96,7 @@ module.exports = {
         // Đổi biệt danh sau khi hack xong
         try {
             const oldNickname = member.nickname || member.user.username; // Lấy biệt danh cũ
+            await saveSetting(`hack-${member.id}`, oldNickname);
             await member.setNickname(hackedNickname);
             message.channel.send(`🛠️ Biệt danh của **${member}** đã bị thay đổi từ **"${oldNickname}"** thành **"${hackedNickname}"**!`);
         } catch (error) {

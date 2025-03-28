@@ -1,4 +1,5 @@
-const { hackedUsers, usedNames } = require('./hack.js'); // Import danh sách hackedUsers và usedNames
+const { usedNames } = require('./hack.js'); // Import danh sách hackedUsers và usedNames
+const { getSetting } = require("../utils/database.js");
 
 module.exports = {
     name: 'unhack',
@@ -12,14 +13,14 @@ module.exports = {
         }
 
         console.log(`[INFO] Thực hiện unhack cho user: ${member.user.username} (${member.id})`);
+        // Lấy biệt danh cũ
+        const oldNickname = await getSetting(`hack-${member.id}`);
 
-        if (!hackedUsers.has(member.id)) {
+        if (!oldNickname) {
             console.log(`[WARN] ${member.user.username} chưa từng bị hack hoặc không có dữ liệu để khôi phục.`);
             return message.reply(`❌ ${member} chưa từng bị hack hoặc không có dữ liệu để khôi phục.`);
         }
 
-        // Lấy biệt danh cũ
-        const oldNickname = hackedUsers.get(member.id);
         console.log(`[DEBUG] Biệt danh cũ: ${oldNickname}`);
 
         // Thử khôi phục biệt danh
@@ -29,7 +30,6 @@ module.exports = {
             console.log(`[SUCCESS] Đã khôi phục biệt danh của ${member.user.username} thành: ${oldNickname}`);
 
             // Xóa khỏi danh sách hacked
-            hackedUsers.delete(member.id);
             console.log(`[INFO] Xóa ${member.user.username} khỏi danh sách hackedUsers.`);
 
             // Xóa khỏi danh sách tên đã dùng
