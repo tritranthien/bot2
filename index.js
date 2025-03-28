@@ -8,6 +8,7 @@ const config = require('./config.json');
 const { logModAction, sendEmbedMessage } = require('./utils/helpers');
 const dbHandler = require('./utils/database');
 const { scheduleNextMessage } = require('./utils/schedule');
+const { log } = require('console');
 let getChannelId;
 if (process.env.APP_ENV === 'local') {
   ({ getChannelId } = require("./utils/sddatabase3.js"));
@@ -67,21 +68,34 @@ client.once('ready', () => {
   scheduleNextMessage(client, config);
 });
 
-async function sendDeployMessage() {
+function isProductionUrl(url) {
   try {
-    const channelId = await getChannelId();
-    const channel = await client.channels.fetch(channelId);
-    console.log(channelId);
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname;
+    return !(hostname === "localhost" || hostname === "127.0.0.1");
+  } catch {
+    return false; // Nếu URL không hợp lệ, coi như localhost
+  }
+}
 
-    if (channel) {
-      const now = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
-      await channel.send(`🚀 Bot đã deploy lúc: **${now}** (GMT+7)`);
-      console.log(`🚀 Bot đã deploy lúc: ${now} VN`);
-    } else {
-      console.error("❌ Không tìm thấy kênh.");
+async function sendDeployMessage() {
+  const APP_URL = process.env.APP_URL || "http://localhost:3000";
+  if (isProductionUrl(APP_URL)) {
+    try {
+      const channelId = await getChannelId();
+      const channel = await client.channels.fetch(channelId);
+      console.log(channelId);
+
+      if (channel) {
+        const now = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+        await channel.send(`🚀 Bot đã deploy lúc: **${now}** (GMT+7)`);
+        console.log(`🚀 Bot đã deploy lúc: ${now} VN`);
+      } else {
+        console.error("❌ Không tìm thấy kênh.");
+      }
+    } catch (error) {
+      console.error("❌ Lỗi khi gửi tin nhắn:", error);
     }
-  } catch (error) {
-    console.error("❌ Lỗi khi gửi tin nhắn:", error);
   }
 }
 
