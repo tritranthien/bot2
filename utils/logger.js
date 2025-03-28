@@ -1,5 +1,10 @@
-const fs = require("fs");
-const path = require("path");
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+export const __filename = fileURLToPath(import.meta.url);
+export const __dirname = dirname(__filename);
 
 // Constants
 const LOG_DIR = path.join(__dirname, "../logs");
@@ -11,7 +16,7 @@ const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
 !fs.existsSync(LOG_DIR) && fs.mkdirSync(LOG_DIR, { recursive: true });
 
 // Optimized log writer with buffering
-const writeLog = (() => {
+export const writeLog = (() => {
     const queue = [];
     let writeInProgress = false;
 
@@ -38,19 +43,19 @@ const writeLog = (() => {
 // Console override with memoized stringification
 const levels = { log: 'INFO', error: 'ERROR', warn: 'WARN' };
 
-Object.entries(levels).forEach(([method, level]) => {
-    const original = console[method];
-    console[method] = (...args) => {
-        const message = args.map(arg =>
-            arg === null ? 'null' :
-                arg === undefined ? 'undefined' :
-                    typeof arg === "object" ? JSON.stringify(arg) : String(arg)
-        ).join(" ");
+// Object.entries(levels).forEach(([method, level]) => {
+//     const original = console[method];
+//     console[method] = (...args) => {
+//         const message = args.map(arg =>
+//             arg === null ? 'null' :
+//                 arg === undefined ? 'undefined' :
+//                     typeof arg === "object" ? JSON.stringify(arg) : String(arg)
+//         ).join(" ");
 
-        writeLog(level, message);
-        original.apply(console, args);
-    };
-});
+//         writeLog(level, message);
+//         original.apply(console, args);
+//     };
+// });
 
 // Optimized log deletion scheduler
 const scheduleLogDeletion = () => {
@@ -81,5 +86,3 @@ const scheduleLogDeletion = () => {
 };
 
 scheduleLogDeletion();
-
-module.exports = { writeLog };

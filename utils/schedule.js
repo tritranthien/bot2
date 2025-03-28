@@ -1,9 +1,5 @@
-require('../utils/logger');
-if (process.env.APP_ENV == 'local') {
-    const { db, getChannelId } = require("./sddatabase3");
-} else {
-    const { db, getChannelId } = require("./database");
-}
+import "../utils/logger.js";
+import { getChannelId } from "../utils/database.js";
 
 // Danh sách giờ gửi tin nhắn
 const SEND_HOURS = [8, 10, 12, 14, 16, 18];
@@ -14,7 +10,7 @@ const MESSAGES = {
     18: () => '⏱️ Bây giờ là 6h chiều, coookkkkkkkkkk 🏡🏡🏡 🍳🍲🍜'
 };
 
-const sendChannelMessage = async (client, config, message) => {
+export const sendChannelMessage = async (client, config, message) => {
     try {
         const channelId = await getChannelId();
         const channel = client.channels.cache.get(channelId || config.aiChannel);
@@ -30,7 +26,7 @@ const sendChannelMessage = async (client, config, message) => {
     }
 };
 
-const getNextScheduleTime = () => {
+export const getNextScheduleTime = () => {
     const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
     const hours = nowVN.getHours();
 
@@ -56,7 +52,7 @@ const getNextScheduleTime = () => {
     return { nextHour, timeUntil };
 };
 
-const scheduleNextMessage = (client, config) => {
+export const scheduleNextMessage = (client, config) => {
     const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
     const dayOfWeek = nowVN.getDay(); // 0 là Chủ Nhật, 6 là Thứ Bảy
 
@@ -84,4 +80,4 @@ const scheduleNextMessage = (client, config) => {
     }, timeUntil);
 };
 
-module.exports = { scheduleNextMessage };
+export { SEND_HOURS, MESSAGES };

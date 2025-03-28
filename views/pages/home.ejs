@@ -1,0 +1,83 @@
+<h1 class="text-2xl font-bold mb-4">User Management</h1>
+        <!-- Create User Form -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <h2 class="text-lg font-semibold mb-2">Tạo người dùng mới</h2>
+            <form id="createUserForm" class="space-y-2" action="/user/create" method="POST">
+                <input type="text" id="username" name="username" placeholder="Username" class="border p-2 w-full rounded">
+                <input type="password" id="password" name="password" placeholder="Password" class="border p-2 w-full rounded">
+                <select id="role" name="role" class="border p-2 w-full rounded">
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="MANAGER">MANAGER</option>
+                    <option value="USER">USER</option>
+                    <option value="GUEST">GUEST</option>
+                </select>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Tạo</button>
+            </form>
+        </div>
+        
+        <% if (users && users.length > 0) { %>
+        <table class="w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <thead>
+                <tr class="bg-gray-200 text-left">
+                    <th class="p-3">Username</th>
+                    <th class="p-3">Role</th>
+                    <th class="p-3">Status</th>
+                    <th class="p-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(user => { %>
+                <tr class="border-t" id="user-<%= user.id %>">
+                    <td class="p-3"><%= user.username %></td>
+                    <td class="p-3">
+                        <select class="border p-1 rounded role-select" data-id="<%= user.id %>">
+                            <option value="ADMIN" <% if(user.role === 'ADMIN') { %>selected<% } %>>Admin</option>
+                            <option value="MANAGER" <% if(user.role === 'MANAGER') { %>selected<% } %>>Manager</option>
+                            <option value="USER" <% if(user.role === 'USER') { %>selected<% } %>>User</option>
+                            <option value="GUEST" <% if(user.role === 'GUEST') { %>selected<% } %>>Guest</option>
+                        </select>
+                    </td>
+                    <td class="p-3">
+                        <select class="border p-1 rounded status-select" data-id="<%= user.id %>">
+                            <option value="ACTIVE" <% if(user.status === 'ACTIVE') { %>selected<% } %>>Active</option>
+                            <option value="INACTIVE" <% if(user.status === 'INACTIVE') { %>selected<% } %>>Inactive</option>
+                            <option value="BLOCKED" <% if(user.status === 'BLOCKED') { %>selected<% } %>>Blocked</option>
+                            <option value="PENDING" <% if(user.status === 'PENDING') { %>selected<% } %>>Pending</option>
+                        </select>
+                    </td>
+                    <td class="p-3">
+                        <% if (ROLE_HIERARCHY[currentUser.role] > ROLE_HIERARCHY[user.role]) { %>
+                        <button class="bg-red-500 text-white px-3 py-1 rounded delete-btn" data-id="<%= user.id %>">
+                            <i class="ph ph-trash"></i> Delete
+                        </button>
+                        <% } %>
+                    </td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+        <% } else { %>
+        <div class="text-center py-10 flex flex-col items-center">
+            <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 118 0v2m-7 4h6a2 2 0 002-2v-4a6 6 0 10-12 0v4a2 2 0 002 2z"></path>
+            </svg>
+            <p class="text-gray-500 text-lg mt-2">Không có người dùng nào.</p>
+        </div>
+        <% } %>
+        <script>
+            document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const userId = event.target.getAttribute("data-id");
+                console.log(userId, event.target);
+                const response = await fetch(`/user/delete/${userId}`, {
+                    method: "DELETE"
+                });
+                if (response.ok) {
+                    showToast('Xóa thành công!');
+                    document.getElementById(`user-${userId}`).remove();
+                } else {
+                    showToast("Xóa thất bại!");
+                }
+            });
+        });
+        </script>

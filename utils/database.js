@@ -1,5 +1,6 @@
-const { Pool } = require('pg');
-require('./logger');
+import pg from 'pg';
+const { Pool } = pg;
+import './logger.js';
 
 // Cấu hình kết nối PostgreSQL
 const pool = new Pool({
@@ -13,79 +14,6 @@ const pool = new Pool({
 pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err);
 });
-
-function initDb() {
-    pool.connect((err, client, release) => {
-        if (err) {
-            console.error(`❌ Lỗi kết nối database: ${err.message}`);
-            return;
-        }
-
-        const queries = `
-            -- Bảng user_sequences để lưu trữ sequence cho mỗi user
-            CREATE TABLE IF NOT EXISTS user_sequences (
-                user_id TEXT PRIMARY KEY,
-                last_sequence INTEGER DEFAULT 0
-            );
-            
-            -- Bảng chats
-            CREATE TABLE IF NOT EXISTS chats (
-                id SERIAL PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                chat_sequence INTEGER NOT NULL,
-                chat_id TEXT NOT NULL,
-                title TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(user_id, chat_sequence)
-            );
-            
-            -- Bảng chat_messages
-            CREATE TABLE IF NOT EXISTS chat_messages (
-                id SERIAL PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                role TEXT NOT NULL,
-                content TEXT NOT NULL,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE
-            );
-
-            -- Add global chat table
-            CREATE TABLE IF NOT EXISTS global_chats (
-                id SERIAL PRIMARY KEY,
-                chat_sequence INTEGER NOT NULL,
-                chat_id TEXT NOT NULL,
-                creator_id TEXT NOT NULL,
-                title TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            CREATE TABLE IF NOT EXISTS global_chat_messages (
-                id SERIAL PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                name TEXT,
-                role TEXT NOT NULL,
-                content TEXT NOT NULL,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                chat_id INTEGER NOT NULL REFERENCES global_chats(id) ON DELETE CASCADE
-            );
-            CREATE TABLE IF NOT EXISTS settings (
-                id SERIAL PRIMARY KEY,
-                key TEXT UNIQUE NOT NULL,
-                value TEXT
-            );
-        `;
-
-        client.query(queries, (err) => {
-            release();
-            if (err) {
-                console.error('❌ Lỗi khởi tạo cơ sở dữ liệu', err);
-            } else {
-                console.log('🔄️ Đã khởi tạo cơ sở dữ liệu');
-            }
-        });
-    });
-}
 
 /**
  * Lấy và tăng sequence cho người dùng
@@ -780,31 +708,34 @@ const getChannelId = async () => {
         throw error;
     }
 };
-
-module.exports = {
-    initDb,
+export {
+    getNextSequence,
     createNewChat,
-    getCurrentChatId,
     getUserChats,
-    addChatMessage,
-    getCurrentChatHistory,
-    summarizeAndUpdateChatTitle,
-    closeDb,
+    getGlobalChats,
+    updateChatTitle,
     deleteUserChatHistory,
-    getCurrentChat,
+    deleteGlobalChatHistory,
     deleteChatById,
+    deleteGlobalChatById,
+    getCurrentChatId,
+    getCurrentGlobalChatId,
+    getCurrentChat,
+    addChatMessage,
+    getChatMessages,
+    getCurrentChatHistory,
+    getCurrentGlobalChatHistory,
     updateChatTime,
+    updateGlobalChatTime,
     getMessagesFromChat,
+    closeDb,
+    summarizeAndUpdateChatTitle,
+    getCurrentGlobalChat,
+    summarizeAndUpdateGlobalChatTitle,
+    addGlobalChatMessage,
     createNewGlobalChat,
     getGlobalChatList,
     getGlobalChatMessages,
-    addGlobalChatMessage,
-    getCurrentGlobalChatHistory,
-    summarizeAndUpdateGlobalChatTitle,
-    getGlobalChats,
-    updateGlobalChatTime,
-    deleteGlobalChatById,
-    deleteGlobalChatHistory,
     saveChannelId,
     getChannelId
 };

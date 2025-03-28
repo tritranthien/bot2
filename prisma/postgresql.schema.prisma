@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user_sequences {
+  user_id        String  @id @map("user_id")
+  last_sequence  Int     @default(0) @map("last_sequence")
+  @@map("user_sequences")
+}
+
+model chats {
+  id            Int      @id @default(autoincrement())
+  user_id       String   @map("user_id")
+  chat_sequence Int      @map("chat_sequence")
+  chat_id       String   @map("chat_id")
+  title         String?
+  created_at    DateTime @default(now()) @map("created_at")
+  updated_at    DateTime @updatedAt @map("updated_at")
+  messages      chat_messages[]
+  @@unique([user_id, chat_sequence])
+  @@map("chats")
+}
+
+model chat_messages {
+  id        Int      @id @default(autoincrement())
+  user_id   String   @map("user_id")
+  role      String
+  content   String
+  timestamp DateTime @default(now())
+  chat      chats    @relation(fields: [chat_id], references: [id], onDelete: Cascade)
+  chat_id   Int      @map("chat_id")
+  @@map("chat_messages")
+}
+
+model global_chats {
+  id            Int      @id @default(autoincrement())
+  chat_sequence Int      @map("chat_sequence")
+  chat_id       String   @map("chat_id")
+  creator_id    String   @map("creator_id")
+  title         String?
+  created_at    DateTime @default(now()) @map("created_at")
+  updated_at    DateTime @updatedAt @map("updated_at")
+  messages      global_chat_messages[]
+  @@map("global_chats")
+}
+
+model global_chat_messages {
+  id        Int      @id @default(autoincrement())
+  user_id   String   @map("user_id")
+  name      String?
+  role      String
+  content   String
+  timestamp DateTime @default(now())
+  chat      global_chats @relation(fields: [chat_id], references: [id], onDelete: Cascade)
+  chat_id   Int        @map("chat_id")
+
+  @@map("global_chat_messages")
+}
+
+model settings {
+  id    Int     @id @default(autoincrement())
+  key   String  @unique
+  value String?
+  @@map("settings")
+}
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  USER
+  GUEST
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+  PENDING
+}
+
+model users {
+  id        String   @id @default(uuid())
+  password  String
+  username  String @unique
+  role      UserRole @default(USER)
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  @@map("users")
+}

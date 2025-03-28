@@ -1,7 +1,8 @@
 // utils/database.js
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-require('./logger');
+import * as sqlite from 'sqlite3';
+const sqlite3 = sqlite.verbose();
+import * as path from 'path';
+import './logger.js';
 
 // Kết nối tới database
 const dbPath = path.join(__dirname, '../data/bot.db');
@@ -612,7 +613,7 @@ const getChannelId = () => {
     });
 };
 
-module.exports = {
+export default {
     initDb,
     createNewChat,
     getCurrentChatId,

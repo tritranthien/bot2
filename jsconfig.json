@@ -1,0 +1,19 @@
+
+{
+    "compilerOptions": {
+      "module": "ESNext",
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "baseUrl": ".",
+      "paths": {
+        "@controllers/*": ["./src/controllers/*"],
+        "@middlewares/*": ["./src/middlewares/*"],
+        "@routes/*": ["./src/routes/*"],
+        "@utils/*": ["./src/utils/*"]
+      }
+    },
+    "exclude": [
+      "node_modules"
+    ]
+  }

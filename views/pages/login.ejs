@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Bot Ultimate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 mb-6 drop-shadow-lg">Discord Bot Ultimate</h1>
+    <div class="w-full max-w-3xl bg-white shadow-lg rounded-lg overflow-hidden flex">
+        <div class="w-1/2 hidden md:block">
+            <img src="/images/animated6.gif" alt="Login Image" class="w-full h-full object-cover">
+        </div>
+        <div class="w-full md:w-1/2 p-8 pb-16">
+            <h2 class="text-2xl font-semibold text-center text-gray-700 mb-6">Đăng Nhập</h2>
+            <form action="/auth/login" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-gray-600" for="username">Tên đăng nhập</label>
+                    <input type="text" id="username" name="username" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label class="block text-gray-600" for="password">Mật khẩu</label>
+                    <input type="password" id="password" name="password" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition">Đăng Nhập</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

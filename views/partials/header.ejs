@@ -1,0 +1,23 @@
+<header class="bg-white shadow-md">
+    <nav class="container mx-auto flex items-center justify-between p-4">
+        <a href="/" class="text-2xl font-bold text-primary">Express App</a>
+        
+        <ul class="flex space-x-4">
+            <li>
+                <a href="/" class="<%= activePage === 'home' ? 'text-primary font-bold' : 'text-gray-600' %> hover:text-primary transition-colors">
+                    Trang Chủ
+                </a>
+            </li>
+            <li>
+                <a href="/about" class="<%= activePage === 'about' ? 'text-primary font-bold' : 'text-gray-600' %> hover:text-primary transition-colors">
+                    Giới Thiệu
+                </a>
+            </li>
+            <li>
+                <a href="/contact" class="<%= activePage === 'contact' ? 'text-primary font-bold' : 'text-gray-600' %> hover:text-primary transition-colors">
+                    Liên Hệ
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
