@@ -8,6 +8,13 @@ const config = require('./config.json');
 const { logModAction, sendEmbedMessage } = require('./utils/helpers');
 const dbHandler = require('./utils/database');
 const { scheduleNextMessage } = require('./utils/schedule');
+let getChannelId;
+if (process.env.APP_ENV === 'local') {
+  ({ getChannelId } = require("./utils/sddatabase3.js"));
+} else {
+  ({ getChannelId } = require("./utils/database.js"));
+}
+
 
 // Khởi tạo client và AI
 const client = new Client({
@@ -24,9 +31,14 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 client.warnings = new Collection();
 
 // Khởi động bot
+let hasSentMessage = false;
 client.once('ready', () => {
   console.log(`🤖 Bot đã sẵn sàng! Đăng nhập với tên ${client.user.tag}`);
   client.user.setActivity('!help để xem lệnh', { type: 'WATCHING' });
+  if (!hasSentMessage) {
+    sendDeployMessage(); // Gọi hàm gửi tin nhắn
+    hasSentMessage = true; // Đánh dấu đã gửi tin nhắn
+  }
   // Khởi tạo database
   dbHandler.initDb();
   // Đảm bảo mỗi server có role Muted
@@ -54,6 +66,23 @@ client.once('ready', () => {
   });
   scheduleNextMessage(client, config);
 });
+
+async function sendDeployMessage() {
+  try {
+    const channelId = await getChannelId();
+    const channel = await client.channels.fetch(channelId);
+    console.log(channelId);
+
+    if (channel) {
+      await channel.send("🚀 Bot đã được cập nhật và deploy thành công!");
+      console.log("✅ Đã gửi thông báo deploy.");
+    } else {
+      console.error("❌ Không tìm thấy kênh.");
+    }
+  } catch (error) {
+    console.error("❌ Lỗi khi gửi tin nhắn:", error);
+  }
+}
 
 // Import các lệnh
 const commandFiles = fs.readdirSync('./commands')
