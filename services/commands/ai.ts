@@ -1,71 +1,86 @@
-// commands/ai.js
+import { Message, GuildMember, TextChannel, NewsChannel } from 'discord.js';
 import { createNewChat, getCurrentChatHistory, summarizeAndUpdateChatTitle, addChatMessage } from '../../utils/database.js';
 import '../../utils/logger.js';
+import { GenerativeModel } from '@google/generative-ai';
+import { Chat as ChatModel } from 'models/chat.js';
+
+interface ExecuteParams {
+    message: Message;
+    args: string[];
+    config: any;
+    logModAction: Function;
+    sendEmbedMessage: Function;
+    client: any;
+    model: GenerativeModel;
+    chatM: ChatModel;
+}
+
+interface ChatMessage {
+    role: string;
+    content: string;
+}
+
+interface ChatHistory {
+    role: string;
+    parts: { text: string }[];
+}
 
 export default {
     name: 'ai',
     description: 'Talk to the AI with persistent conversation history using the current chat. 🤖',
     
-    async execute({message, args, config, logModAction, sendEmbedMessage, client, model, chatM}) {
+    async execute({ message, args, config, logModAction, sendEmbedMessage, client, model, chatM }: ExecuteParams): Promise<void> {
         if (!args.length) {
-            return message.reply('⚠️ Bạn cần nhập nội dung để gọi AI.');
+            message.reply('⚠️ Bạn cần nhập nội dung để gọi AI.');
+            return;
         }
 
-        let userId = message.author.id;
-        const member = message.mentions.members.first();
+        let userId: string = message.author.id;
+        const member: GuildMember | undefined = message.mentions.members?.first();
         if (member) {
             userId = member.id;
             args.shift();
         }
-        const prompt = args.join(' ');
+        const prompt: string = args.join(' ');
 
         try {
-            // Thông báo đang xử lý
-            const processingMsg = await message.channel.send('🤔 Đang xử lý...');
+            let processingMsg;
+            if (message.channel instanceof TextChannel || message.channel instanceof NewsChannel) {
+                const processingMsg = await message.channel.send('🤔 Đang xử lý...');
+            }
             
-            // Lấy lịch sử cuộc trò chuyện từ database (giới hạn 5 cặp tin nhắn gần nhất)
             let historyRows = await chatM.getUserChatHistory(userId, 5);
             
-            // Chuyển đổi dữ liệu từ DB sang định dạng mà Gemini API yêu cầu
-            let conversation = historyRows.map(row => ({
+            let conversation: ChatHistory[] = historyRows.map(row => ({
                 role: row.role,
                 parts: [{ text: row.content }]
             }));
             
             console.log(`🗣️ Lịch sử cuộc trò chuyện của ${userId}: ${JSON.stringify(conversation)}`);
             
-            // Kiểm tra xem lịch sử có trống không
             if (conversation.length === 0) {
-                // Nếu không có lịch sử, chỉ cần gửi prompt trực tiếp
                 try {
                     const result = await model.generateContent(prompt);
-                    const content = result.response.text();
+                    const content: string = result.response.text();
                     
-                    // Lưu cả câu hỏi và câu trả lời vào database
                     await chatM.addChatMessage(userId, 'user', prompt);
                     await chatM.addChatMessage(userId, 'model', content);
                     
-                    // Tóm tắt và cập nhật tiêu đề cuộc trò chuyện
-                    await this.summarizeAndUpdateChatTitle(userId);
+                    await this.summarizeAndUpdateChatTitle(userId, model);
                     
-                    // Xóa thông báo đang xử lý
                     await processingMsg.delete();
                     
-                    // Gửi câu trả lời cho người dùng
                     await sendEmbedMessage(message.channel, message.author, content);
                                         
-                } catch (error) {
+                } catch (error: any) {
                     console.error(`❌ Lỗi khi gọi generateContent: ${error.message}`);
-                    // Xóa thông báo đang xử lý
                     await processingMsg.delete();
                     message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
                 }
                 return;
             }
             
-            // Nếu có lịch sử, sử dụng startChat để duy trì ngữ cảnh
             try {
-                // Tạo chat với lịch sử cuộc trò chuyện
                 const chat = model.startChat({
                     history: conversation,
                     generationConfig: {
@@ -73,99 +88,78 @@ export default {
                     }
                 });
                 
-                // Gửi prompt tới AI
                 const result = await chat.sendMessage(prompt);
-                const content = result.response.text();
+                const content: string = result.response.text();
                 
-                // Lưu tin nhắn của người dùng vào database
                 await addChatMessage(userId, 'user', prompt);
-                
-                // Lưu câu trả lời của AI vào database
                 await addChatMessage(userId, 'model', content);
                 
-                // Tóm tắt và cập nhật tiêu đề cuộc trò chuyện
                 await summarizeAndUpdateChatTitle(userId, model);
                 
-                // Xóa thông báo đang xử lý
                 await processingMsg.delete();
                 
-                // Gửi câu trả lời cho người dùng
                 await sendEmbedMessage(message.channel, message.author, content);
                                 
-            } catch (error) {
+            } catch (error: any) {
                 console.error(`❌ Lỗi khi gọi startChat: ${error.message}`);
-                // Xóa thông báo đang xử lý
                 await processingMsg.delete();
                 
-                // Thông báo lỗi cho người dùng
                 message.reply('🔄 Đang thử lại với cuộc trò chuyện mới...');
                 
-                // Tạo một cuộc trò chuyện mới để bắt đầu lại
                 try {
-                    // Tạo chat mới
                     await createNewChat(userId);
                     
-                    // Gọi AI với prompt
                     const result = await model.generateContent(prompt);
-                    const content = result.response.text();
+                    const content: string = result.response.text();
                     
                     await addChatMessage(userId, 'user', prompt);
                     await addChatMessage(userId, 'model', content);
                     
-                    await summarizeAndUpdateChatTitle(userId);
+                    await summarizeAndUpdateChatTitle(userId, model);
                     
                     await sendEmbedMessage(message.channel, message.author, content);
                     
-                } catch (fallbackError) {
+                } catch (fallbackError: any) {
                     console.error(`❌ Lỗi khi thử lại với generateContent: ${fallbackError.message}`);
                     message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(`❌ Lỗi chung khi gọi AI: ${error.message}`);
             message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
         }
     },
-    async summarizeAndUpdateChatTitle(userId) {
+
+    async summarizeAndUpdateChatTitle(userId: string, model: GenerativeModel): Promise<void> {
         try {
-            const currentChat = await chatM.getCurrentChat(userId);
+            const currentChat = await (new ChatModel()).getCurrentChat(userId);
     
-            const messages = await chatM.getChatMessages(currentChat.id, 5);
+            const messages: ChatMessage[] = await (new ChatModel()).getChatMessages(currentChat.id, 5);
     
             if (messages.length === 0) {
                 return;
             }
     
+            let context: string = messages.map(msg => 
+                `${msg.role === 'user' ? 'Người dùng' : 'AI'}: ${msg.content}`
+            ).reverse().join('\n');
     
-            // Tạo context cho AI
-            let context = messages.map(msg => `${msg.role === 'user' ? 'Người dùng' : 'AI'}: ${msg.content}`).reverse().join('\n');
+            const prompt: string = `Dựa vào đoạn hội thoại sau, hãy tạo một tiêu đề ngắn gọn (dưới 50 ký tự) cho cuộc trò chuyện này:\n\n${context}\n\nTiêu đề:`;
     
-    
-            // Prompt để tóm tắt
-            const prompt = `Dựa vào đoạn hội thoại sau, hãy tạo một tiêu đề ngắn gọn (dưới 50 ký tự) cho cuộc trò chuyện này:\n\n${context}\n\nTiêu đề:`;
-    
-    
-            // Gọi AI để tóm tắt
             const result = await model.generateContent(prompt);
-            let title = result.response.text().trim();
+            let title: string = result.response.text().trim();
     
-    
-            // Đảm bảo tiêu đề không quá dài
             if (title.length > 50) {
                 title = title.substring(0, 47) + '...';
             }
     
-    
-            // Thêm chat_id vào tiêu đề
             title = `[${currentChat.chat_id}] ${title}`;
     
-    
-            // Cập nhật tiêu đề
-            await chatM.save({ title }, { id: currentChat.id });
+            await (new ChatModel()).save({ title }, { id: currentChat.id });
     
             console.log(`✅ Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
     
-        } catch (error) {
+        } catch (error: any) {
             console.error(`❌ Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
         }
     }
