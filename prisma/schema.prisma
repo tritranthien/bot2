@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://dbot2_9iv3_user:Uaj6cjiHPvdtMCoNBElAg0rmz9LYMd69@dpg-cvh6vh5rie7s73ekuda0-a.singapore-postgres.render.com/dbot2_9iv3"
 }
 
 model user_sequences {

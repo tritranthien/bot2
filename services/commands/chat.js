@@ -1,15 +1,12 @@
 // commands/chats.js
 import { EmbedBuilder } from 'discord.js';
-import {
-    getUserChats
-} from '../../utils/database.js';
 import '../../utils/logger.js';
 
 export default  {
     name: 'chats',
     description: 'Liệt kê danh sách cuộc trò chuyện đã lưu của bạn. 📚',
     
-    async execute({message, args, config, logModAction, sendEmbedMessage, client, model}) {
+    async execute({message, args, config, logModAction, sendEmbedMessage, client, model, chatM}) {
         let userId = message.author.id;
         let guildMember;
         const member = message.mentions.members.first();
@@ -19,7 +16,7 @@ export default  {
         }
         try {
             // Lấy danh sách cuộc trò chuyện của người dùng
-            const chats = await getUserChats(userId);
+            const chats = await chatM.getUserChats(userId);
             
             if (chats.length === 0) {
                 return message.reply('Bạn chưa có cuộc trò chuyện nào. 🪹');

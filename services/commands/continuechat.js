@@ -1,16 +1,11 @@
 // commands/continuechat.js
-import {
-    getMessagesFromChat,
-    getUserChats,
-    updateChatTime
-} from '../../utils/database.js';
 import '../../utils/logger.js';
 
 export default {
     name: 'continuechat',
     description: 'Tiếp tục một cuộc trò chuyện AI đã lưu, cú pháp: `!continuechat <chatId>`',
     
-    async execute({message, args, config, logModAction, sendEmbedMessage, client, model}) {
+    async execute({message, args, config, logModAction, sendEmbedMessage, client, model, chatM}) {
         let userId = message.author.id;
         let chatId;
         // Kiểm tra xem người dùng đã cung cấp ID cuộc trò chuyện chưa
@@ -29,7 +24,7 @@ export default {
     
         try {
             // Tìm kiếm cuộc trò chuyện trong cơ sở dữ liệu
-            const chats = await getUserChats(userId);
+            const chats = await chatM.getUserChats(userId);
             const targetChat = chats.find(chat => chat.chat_id === chatId);
             
             if (!targetChat) {
@@ -37,10 +32,10 @@ export default {
             }
             
             // Cập nhật thời gian truy cập để đặt cuộc trò chuyện này thành hiện tại
-            await updateChatTime(userId, targetChat.id);
+            await chatM.save({id: targetChat.id, updated_at: new Date()});
             
             // Lấy tin nhắn gần đây từ cuộc trò chuyện
-            const recentMessages = await getMessagesFromChat(targetChat.id, 5);
+            const recentMessages = await chatM.getChatMessages(targetChat.id, 5);
             let messagePreview = "";
             
             if (recentMessages && recentMessages.length > 0) {

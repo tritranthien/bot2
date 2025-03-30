@@ -24,7 +24,7 @@ export default {
             const processingMsg = await message.channel.send('🤔 Đang xử lý...');
             
             // Lấy lịch sử cuộc trò chuyện từ database (giới hạn 5 cặp tin nhắn gần nhất)
-            let historyRows = await getCurrentChatHistory(userId, 5);
+            let historyRows = await chatM.getUserChatHistory(userId, 5);
             
             // Chuyển đổi dữ liệu từ DB sang định dạng mà Gemini API yêu cầu
             let conversation = historyRows.map(row => ({
@@ -42,11 +42,11 @@ export default {
                     const content = result.response.text();
                     
                     // Lưu cả câu hỏi và câu trả lời vào database
-                    await addChatMessage(userId, 'user', prompt);
-                    await addChatMessage(userId, 'model', content);
+                    await chatM.addChatMessage(userId, 'user', prompt);
+                    await chatM.addChatMessage(userId, 'model', content);
                     
                     // Tóm tắt và cập nhật tiêu đề cuộc trò chuyện
-                    await summarizeAndUpdateChatTitle(userId, model);
+                    await this.summarizeAndUpdateChatTitle(userId);
                     
                     // Xóa thông báo đang xử lý
                     await processingMsg.delete();
@@ -109,14 +109,11 @@ export default {
                     const result = await model.generateContent(prompt);
                     const content = result.response.text();
                     
-                    // Lưu cả câu hỏi và câu trả lời vào database
                     await addChatMessage(userId, 'user', prompt);
                     await addChatMessage(userId, 'model', content);
                     
-                    // Tóm tắt và cập nhật tiêu đề cuộc trò chuyện
-                    await summarizeAndUpdateChatTitle(userId, model);
+                    await summarizeAndUpdateChatTitle(userId);
                     
-                    // Gửi câu trả lời cho người dùng
                     await sendEmbedMessage(message.channel, message.author, content);
                     
                 } catch (fallbackError) {
@@ -129,4 +126,47 @@ export default {
             message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
         }
     },
+    async summarizeAndUpdateChatTitle(userId) {
+        try {
+            const currentChat = await chatM.getCurrentChat(userId);
+    
+            const messages = await chatM.getChatMessages(currentChat.id, 5);
+    
+            if (messages.length === 0) {
+                return;
+            }
+    
+    
+            // Tạo context cho AI
+            let context = messages.map(msg => `${msg.role === 'user' ? 'Người dùng' : 'AI'}: ${msg.content}`).reverse().join('\n');
+    
+    
+            // Prompt để tóm tắt
+            const prompt = `Dựa vào đoạn hội thoại sau, hãy tạo một tiêu đề ngắn gọn (dưới 50 ký tự) cho cuộc trò chuyện này:\n\n${context}\n\nTiêu đề:`;
+    
+    
+            // Gọi AI để tóm tắt
+            const result = await model.generateContent(prompt);
+            let title = result.response.text().trim();
+    
+    
+            // Đảm bảo tiêu đề không quá dài
+            if (title.length > 50) {
+                title = title.substring(0, 47) + '...';
+            }
+    
+    
+            // Thêm chat_id vào tiêu đề
+            title = `[${currentChat.chat_id}] ${title}`;
+    
+    
+            // Cập nhật tiêu đề
+            await chatM.save({ title }, { id: currentChat.id });
+    
+            console.log(`✅ Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
+    
+        } catch (error) {
+            console.error(`❌ Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
+        }
+    }
 };

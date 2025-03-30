@@ -1,16 +1,11 @@
 // commands/clearai.js
-import {
-    createNewChat,
-    deleteChatById,
-    deleteUserChatHistory
-} from '../../utils/database.js';
 import '../../utils/logger.js';
 
 export default {
     name: 'clearai',
     description: 'Xóa lịch sử trò chuyện AI của bạn. Bạn có thể xóa toàn bộ lịch sử hoặc một cuộc trò chuyện cụ thể bằng cách cung cấp ID. 🗑️',
     
-    async execute({message, args, config, logModAction, sendEmbedMessage, client, model}) {
+    async execute({message, args, config, logModAction, sendEmbedMessage, client, model, chatM}) {
         const userId = message.author.id;
         
         try {
@@ -28,7 +23,7 @@ export default {
                 
                 try {
                     // Xóa cuộc trò chuyện theo ID
-                    await deleteChatById(userId, chatId);
+                    await chatM.deleteChatById(userId, chatId);
                     
                     // Xóa thông báo đang xử lý
                     await processingMsg.delete().catch(() => {});
@@ -51,10 +46,10 @@ export default {
                 const processingMsg = await message.channel.send('🗑️ Đang xóa toàn bộ lịch sử trò chuyện...');
                 
                 // Xóa lịch sử trò chuyện AI
-                await deleteUserChatHistory(userId);
+                await chatM.deleteUserChatHistory(userId);
                 
                 // Tạo một cuộc trò chuyện mới để người dùng có thể tiếp tục sử dụng
-                await createNewChat(userId);
+                await chatM.createNewChat(userId);
                 
                 // Xóa thông báo đang xử lý
                 await processingMsg.delete().catch(() => {});
