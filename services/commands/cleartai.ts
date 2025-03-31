@@ -1,6 +1,6 @@
 // commands/clearai.ts
 import '../../utils/logger.js';
-import { ExecuteParams } from 'interfaces/command/excuteParams';
+import { ExecuteParams } from './types';
 
 
 export default {

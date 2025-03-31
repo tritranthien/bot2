@@ -6,9 +6,9 @@ import { dirname } from 'path';
 dotenv.config();
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
-import { Client, GatewayIntentBits, Message, TextChannel, GuildMember, Guild, Role, Channel, VoiceChannel, ForumChannel, CategoryChannel, ActivityType } from 'discord.js';
+import { Client, GatewayIntentBits, Message, TextChannel, GuildMember, Guild, Role, Channel, VoiceChannel, ForumChannel, CategoryChannel, ActivityType, PartialGuildMember } from 'discord.js';
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
-import { Chat } from "../models/chat.js";
+import { Chat } from "../models/chat";
 
 interface Config {
   prefix: string;
@@ -82,8 +82,8 @@ class CommandService {
 
   async loadCommands(commandFiles: string[]): Promise<void> {
     for (const file of commandFiles) {
-      if (!file.endsWith(".js")) continue;
-
+      if (!file.endsWith(".js") && !file.endsWith(".ts")) continue;
+      if(file.startsWith("types.ts")) continue;
       try {
         const filePath = pathToFileURL(path.join(__dirname, "commands", file)).href;
         const { default: command } = await import(filePath);
@@ -140,14 +140,14 @@ class ModerationService {
     }
   }
 
-  logMemberLeave(member: GuildMember): void {
+  logMemberLeave(member: GuildMember | PartialGuildMember): void {
     const logChannel = member.guild.channels.cache.find(
       channel => channel.name === 'mod-log'
     ) as TextChannel;
     
     if (logChannel) {
       logChannel.send(
-        `:outbox_tray: **${member.user.tag}** đã rời server. (ID: ${member.id})`
+        `:outbox_tray: **${member.user?.tag}** đã rời server. (ID: ${member.id})`
       );
     }
   }
@@ -241,7 +241,9 @@ class DiscordBotService {
     try {
       const commandFiles = await readdir(path.join(__dirname, "commands"));
       await this.commandService.loadCommands(commandFiles);
+      console.log('Đã tải lệnh');
     } catch (error) {
+      console.log(error, 'lỗi tải lệnh');
       this.loggerService.error("Lỗi khi tải lệnh:", error);
     }
   }
@@ -259,7 +261,7 @@ class DiscordBotService {
       this.moderationService.logMemberJoin(member);
     });
 
-    this.client.on('guildMemberRemove', (member: GuildMember) => {
+    this.client.on('guildMemberRemove', (member: GuildMember | PartialGuildMember) => {
       this.moderationService.logMemberLeave(member);
     });
   }

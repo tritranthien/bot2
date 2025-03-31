@@ -2,6 +2,7 @@ import { config } from "../config.js";
 const repoPath = config.repoPath || 'postgresql';
 import { checkPassword, hashPassword } from "../utils/passHash.js";
 import jwt from 'jsonwebtoken';
+const {UserRepo} = await import(`../repo/${repoPath}/user`);
 import Base from "./base.js";
 
 interface UserData {
@@ -21,16 +22,11 @@ interface ApiResponse<T> {
 
 export class User extends Base {
     constructor() {
-        super();
-    }
-
-    async init() {
-        const {UserRepo} = await import(`../repo/${repoPath}/user.js`);
-        this.repo = new UserRepo();
+        super(new UserRepo());
     }
 
     async signUp(username: string, password: string): Promise<ApiResponse<any>> {
-        const existingUser = await this.repo.findFirst({username});
+        const existingUser = await this.repo!.findFirst({username});
         if (existingUser) {
             return {
                 ok: false,
@@ -39,7 +35,7 @@ export class User extends Base {
         }
         
         const hashedPassword = await hashPassword(password);
-        const result = await this.repo.save({username, password: hashedPassword});
+        const result = await this.repo!.save({username, password: hashedPassword});
         return {
             ok: true,
             result
@@ -47,7 +43,7 @@ export class User extends Base {
     }
 
     async login(username: string, password: string): Promise<ApiResponse<any>> {
-        const user = await this.repo.findFirst({username}) as UserData;
+        const user = await this.repo!.findFirst({username}) as UserData;
         if (!user) {
             return {
                 ok: false,

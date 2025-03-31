@@ -1,6 +1,6 @@
 import { GenerativeModel } from '@google/generative-ai';
 import { GuildMember, NewsChannel, TextChannel } from 'discord.js';
-import { Chat as ChatModel } from 'models/chat.js';
+import { Chat as ChatModel } from '../../models/chat';
 import '../../utils/logger.js';
 
 import { ChatHistory, ChatMessage, ExecuteParams } from '../../interfaces/command/excuteParams';
@@ -26,7 +26,7 @@ export default {
         try {
             let processingMsg;
             if (message.channel instanceof TextChannel || message.channel instanceof NewsChannel) {
-                const processingMsg = await message.channel.send('🤔 Đang xử lý...');
+                processingMsg = await message.channel.send('🤔 Đang xử lý...');
             }
             
             let historyRows = await chatM.getUserChatHistory(userId, 5);
@@ -48,13 +48,13 @@ export default {
                     
                     await this.summarizeAndUpdateChatTitle(userId, model);
                     
-                    await processingMsg.delete();
+                    await processingMsg?.delete();
                     
                     await sendEmbedMessage(message.channel, message.author, content);
                                         
                 } catch (error: any) {
                     console.error(`❌ Lỗi khi gọi generateContent: ${error.message}`);
-                    await processingMsg.delete();
+                    await processingMsg?.delete();
                     message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
                 }
                 return;
@@ -76,13 +76,13 @@ export default {
                 
                 await this.summarizeAndUpdateChatTitle(userId, model);
                 
-                await processingMsg.delete();
+                await processingMsg?.delete();
                 
                 await sendEmbedMessage(message.channel, message.author, content);
                                 
             } catch (error: any) {
                 console.error(`❌ Lỗi khi gọi startChat: ${error.message}`);
-                await processingMsg.delete();
+                await processingMsg?.delete();
                 
                 message.reply('🔄 Đang thử lại với cuộc trò chuyện mới...');
                 

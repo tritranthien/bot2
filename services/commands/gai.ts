@@ -24,6 +24,8 @@ export default {
                 return await this.deleteGlobalChatHistory(message, args[1]);
 
             default:
+                console.log("hello");
+                
                 return await this.processGlobalChatMessage(message, args, model, sendEmbedMessage);
         }
     },
@@ -31,7 +33,7 @@ export default {
     async deleteGlobalChatHistory(message: Message, chatId: string | null = null): Promise<void> {
         try {
             const userId: string = message.author.id;
-            let processingMsg: Message | undefined;
+            let processingMsg;
             const gChatModel = new GlobalChat();
             if (chatId) {
                 if (!chatId.match(/^g\d+$/)) {
@@ -43,11 +45,11 @@ export default {
                 }
                 try {
                     await gChatModel.deleteGlobalChatById(chatId);
-                    await processingMsg.delete().catch(() => {});
+                    await processingMsg?.delete().catch(() => {});
                     await message.reply(`✅ Đã xóa cuộc trò chuyện ${chatId}.`);
                     console.log(`User ${message.author.tag} (${userId}) đã xóa cuộc trò chuyện ${chatId}.`);
                 } catch (error: any) {
-                    await processingMsg.delete().catch(() => {});
+                    await processingMsg?.delete().catch(() => {});
                     await message.reply(`❌ ${error.message}`);
                 }
             } else {
@@ -56,7 +58,7 @@ export default {
                 }
                 await gChatModel.deleteGlobalChatHistory();
                 await gChatModel.createNewGlobalChat(userId);
-                await processingMsg.delete().catch(() => {});
+                await processingMsg?.delete().catch(() => {});
                 await message.reply('✅ Đã xóa tất cả lịch sử trò chuyện của bạn với AI. Một cuộc trò chuyện mới đã được tạo.');
                 console.log(`User ${message.author.tag} (${userId}) đã xóa toàn bộ lịch sử trò chuyện AI.`);
                 return;
@@ -177,7 +179,7 @@ export default {
         const userId: string = message.author.id;
         const userName: string = message.author.displayName;
         const prompt: string = args.join(' ');
-        let processingMsg: Message | undefined;
+        let processingMsg;
         try {
             const globalChatM = new GlobalChat();
             if ('send' in message.channel) {
@@ -197,11 +199,11 @@ export default {
                     await globalChatM.addGlobalChatMessage(userId, 'user', prompt, userName);
                     await globalChatM.addGlobalChatMessage(userId, 'model', content, userName);
                     await this.summarizeAndUpdateGlobalChatTitle(model);
-                    await processingMsg.delete();
+                    await processingMsg?.delete();
                     await sendEmbedMessage(message.channel, message.author, content);
                 } catch (error: any) {
                     console.error(`Lỗi khi gọi generateContent: ${error.message}`);
-                    await processingMsg.delete();
+                    await processingMsg?.delete();
                     message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
                 }
                 return;
@@ -221,11 +223,11 @@ export default {
                 await globalChatM.addGlobalChatMessage(userId, 'user', prompt, userName);
                 await globalChatM.addGlobalChatMessage(userId, 'model', content, userName);
                 await this.summarizeAndUpdateGlobalChatTitle(model);
-                await processingMsg.delete();
+                await processingMsg?.delete();
                 await sendEmbedMessage(message.channel, message.author, content);
             } catch (error: any) {
                 console.error(`Lỗi khi gọi startChat: ${error.message}`);
-                await processingMsg.delete();
+                await processingMsg?.delete();
                 message.reply('Có lỗi xảy ra khi gọi AI. Đang thử lại với cuộc trò chuyện mới...');
                 
                 try {
@@ -280,7 +282,7 @@ export default {
             title = `[${currentChat.chat_id}] ${title}`;
 
             // Cập nhật tiêu đề
-            await this.updateChatTitle(currentChat.id, title);
+            await globalChatM.updateChatTitle(currentChat.id, title);
 
             console.log(`✅ Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
 

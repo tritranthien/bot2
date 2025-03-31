@@ -14,9 +14,9 @@ export interface Repository {
 }
 
 export default class Base {
-    public repo: Repository | null;
+    public repo: Repository;
 
-    constructor(repo: Repository | null = null) {
+    constructor(repo: Repository) {
         this.repo = repo;
     }
 

@@ -1,6 +1,8 @@
 import { config } from "../config.js";
 const repoPath = config.repoPath || 'postgresql';
-import Base from "./base.js";
+import Base, { Repository } from "./base.js";
+const {ChatRepo} = await import(`../repo/${repoPath}/chat.js`);
+const {ChatMessageRepo} = await import(`../repo/${repoPath}/chat_message.js`);
 
 interface ChatMessage {
     id: string;
@@ -20,18 +22,11 @@ interface DeleteResult {
 }
 
 export class Chat extends Base {
-    private chatMessagesRepo: any;
+    private chatMessagesRepo: Repository;
     constructor() {
-        super();
-        this.init();
-    }
-    async init () {
-        const {ChatRepo} = await import(`../repo/${repoPath}/chat.js`);
-        const {ChatMessageRepo} = await import(`../repo/${repoPath}/chat_message.js`);
-        this.repo = new ChatRepo();
+        super(new ChatRepo());
         this.chatMessagesRepo = new ChatMessageRepo();
     }
-
     async getNextSequence(userId: string): Promise<number> {
         try {
             const userSequence = await this.repo.save(

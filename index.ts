@@ -31,7 +31,8 @@ interface RenderOptions {
   ROLE_HIERARCHY?: typeof ROLE_HIERARCHY;
   [key: string]: any;
 }
-
+const discordBot = new DiscordBotService();
+discordBot.initialize().catch(console.error);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.json()); // Đọc dữ liệu JSON từ request body
@@ -56,7 +57,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     options.activePage = options.activePage || '';
     options.title = options.title || 'Dashboard';
     options.ROLE_HIERARCHY = ROLE_HIERARCHY;
-    originalRender.call(this, view, options);
+    const boundRender = originalRender.bind(res);
+    boundRender(view, options);
   };
 
   next();
@@ -78,5 +80,3 @@ function keepAlive(): void {
 }
 
 setInterval(keepAlive, 12 * 60 * 1000);
-const discordBot = new DiscordBotService();
-discordBot.initialize().catch(console.error);

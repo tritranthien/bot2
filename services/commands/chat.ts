@@ -73,7 +73,7 @@ export default {
                 message.channel.send({ embeds: [embed] });
                 
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Lỗi khi lấy danh sách cuộc trò chuyện: ${error.message}`);
             message.reply('Có lỗi xảy ra khi lấy danh sách cuộc trò chuyện. Vui lòng thử lại sau.');
         }

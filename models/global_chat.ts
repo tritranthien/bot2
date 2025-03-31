@@ -1,6 +1,8 @@
 import { config } from "../config";
 const repoPath = config.repoPath || 'postgresql';
 import Base, { Repository } from "./base.js";
+const {GlobalChatRepo} = await import(`../repo/${repoPath}/global_chat.js`);
+const {GlobalChatMessageRepo} = await import(`../repo/${repoPath}/global_chat_message.js`);
 
 export interface GlobalChatMessage {
     role: string;
@@ -26,14 +28,7 @@ interface CurrentChat {
 export class GlobalChat extends Base {
     private globalChatMessagesRepo: Repository;
     constructor() {
-        super();
-        this.init();
-    }
-
-    async init() {
-        const {GlobalChatRepo} = await import(`../repo/${repoPath}/global_chat.js`);
-        const {GlobalChatMessageRepo} = await import(`../repo/${repoPath}/global_chat_message.js`);
-        this.repo = new GlobalChatRepo();
+        super(new GlobalChatRepo());
         this.globalChatMessagesRepo = new GlobalChatMessageRepo(); 
     }
 

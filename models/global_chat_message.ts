@@ -1,13 +1,10 @@
 import { config } from "../config";
 const repoPath: string = config.repoPath || 'postgresql';
-import Base from "./base.js";
+import Base, { Repository } from "./base.js";
+const {GlobalChatMessageRepo} = await import(`../repo/${repoPath}/global_chat_message.js`);
 
 export class GlobalChatMessage extends Base {
     constructor() {
-        super();
-    }
-    async init () {
-        const {GlobalChatMessageRepo} = await import(`../repo/${repoPath}/global_chat_message.js`);
-        this.repo = new GlobalChatMessageRepo(); 
+        super(new GlobalChatMessageRepo());
     }
 }
