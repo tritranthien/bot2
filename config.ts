@@ -1,11 +1,12 @@
-interface Config {
+export type Config = {
   prefix: string;
   modLogChannel: string;
-  mutedRole: string;
+  mutedRole: string; 
   sonId: string;
   camGif: string;
   aiChannel: string;
   repoPath: string;
+  channeSpamSettingKey: string;
 }
 
 export const config: Config = {
@@ -15,5 +16,6 @@ export const config: Config = {
   sonId: "1349637201666768898",
   camGif: "a:campuchigif:1352142676056735764",
   aiChannel: "1354298788004761641",
-  repoPath: process.env.REPO_PATH || "postgresql"
+  repoPath: process.env.REPO_PATH || "postgresql",
+  channeSpamSettingKey: 'channel-spam-bot'
 }

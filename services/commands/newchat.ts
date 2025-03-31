@@ -1,19 +1,19 @@
-// commands/newchat.js
+// commands/newchat.ts
+import { Chat } from 'models/chat';
+import '../../utils/logger';
 import {
-    createNewChat
-} from '../../utils/database.js';
-import '../../utils/logger.js';
-
+    ExecuteParams
+} from "./types";
 export default {
     name: 'newchat',
     description: 'Start a new AI conversation. 🤖',
     
-    async execute({message, args, config, logModAction, sendEmbedMessage, client, model}) {
+    async execute({ message, args, config, logModAction, sendEmbedMessage, client, model }: ExecuteParams): Promise<void> {
         const userId = message.author.id;
-        
+        const myChatM = new Chat();
         try {
             // Tạo một cuộc trò chuyện mới
-            await createNewChat(userId);
+            await myChatM.createNewChat(userId);
             
             // Gửi xác nhận
             await message.reply('💬 Đã tạo cuộc trò chuyện mới. Bạn có thể bắt đầu trò chuyện với lệnh `!ai`.');

@@ -12,6 +12,7 @@ interface ChatInterface {
     id: string;
     chat_id: string;
     chat_sequence?: number;
+    title?: string;
 }
 
 interface DeleteResult {

@@ -1,4 +1,6 @@
-interface Repository {
+import { FindOptions } from "../repo/postgresql/base";
+
+export interface Repository {
   save(record: any, where?: any): Promise<any>;
   bulkSave(records: any[]): Promise<any>;
   findUnique(id: any, select?: any, include?: any): Promise<any>;
@@ -7,8 +9,8 @@ interface Repository {
   deleteBy(where: any): Promise<any>;
   bulkDelete(ids: any[]): Promise<any>;
   bulkDeleteBy(where: any): Promise<any>;
-  findMany(findOptions: any): Promise<any[]>;
-  count(findOptions: any): Promise<number>;
+  findMany(findOptions: FindOptions): Promise<any[]>;
+  count(findOptions: FindOptions): Promise<number>;
 }
 
 export default class Base {

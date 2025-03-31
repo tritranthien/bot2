@@ -1,29 +1,9 @@
-import { Message, GuildMember, TextChannel, NewsChannel } from 'discord.js';
-import { createNewChat, getCurrentChatHistory, summarizeAndUpdateChatTitle, addChatMessage } from '../../utils/database.js';
-import '../../utils/logger.js';
 import { GenerativeModel } from '@google/generative-ai';
+import { GuildMember, NewsChannel, TextChannel } from 'discord.js';
 import { Chat as ChatModel } from 'models/chat.js';
+import '../../utils/logger.js';
 
-interface ExecuteParams {
-    message: Message;
-    args: string[];
-    config: any;
-    logModAction: Function;
-    sendEmbedMessage: Function;
-    client: any;
-    model: GenerativeModel;
-    chatM: ChatModel;
-}
-
-interface ChatMessage {
-    role: string;
-    content: string;
-}
-
-interface ChatHistory {
-    role: string;
-    parts: { text: string }[];
-}
+import { ChatHistory, ChatMessage, ExecuteParams } from '../../interfaces/command/excuteParams';
 
 export default {
     name: 'ai',
@@ -91,10 +71,10 @@ export default {
                 const result = await chat.sendMessage(prompt);
                 const content: string = result.response.text();
                 
-                await addChatMessage(userId, 'user', prompt);
-                await addChatMessage(userId, 'model', content);
+                await chatM.addChatMessage(userId, 'user', prompt);
+                await chatM.addChatMessage(userId, 'model', content);
                 
-                await summarizeAndUpdateChatTitle(userId, model);
+                await this.summarizeAndUpdateChatTitle(userId, model);
                 
                 await processingMsg.delete();
                 
@@ -107,15 +87,15 @@ export default {
                 message.reply('🔄 Đang thử lại với cuộc trò chuyện mới...');
                 
                 try {
-                    await createNewChat(userId);
+                    await chatM.createNewChat(userId);
                     
                     const result = await model.generateContent(prompt);
                     const content: string = result.response.text();
                     
-                    await addChatMessage(userId, 'user', prompt);
-                    await addChatMessage(userId, 'model', content);
+                   await chatM.addChatMessage(userId, 'user', prompt);
+                   await chatM.addChatMessage(userId, 'model', content);
                     
-                    await summarizeAndUpdateChatTitle(userId, model);
+                    await this.summarizeAndUpdateChatTitle(userId, model);
                     
                     await sendEmbedMessage(message.channel, message.author, content);
                     

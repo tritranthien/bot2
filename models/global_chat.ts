@@ -1,18 +1,21 @@
 import { config } from "../config";
 const repoPath = config.repoPath || 'postgresql';
-import Base from "./base.js";
+import Base, { Repository } from "./base.js";
 
-interface GlobalChatMessage {
+export interface GlobalChatMessage {
     role: string;
     content: string;
     user_id: string;
     name: string;
 }
 
-interface GlobalChatResult {
+export interface GlobalChatResult {
     id: number;
     chat_id: string;
     sequence: number;
+    _count?: {
+        global_chat_messages?: number;
+    };
 }
 
 interface CurrentChat {
@@ -21,7 +24,7 @@ interface CurrentChat {
 }
 
 export class GlobalChat extends Base {
-    private globalChatMessagesRepo: any;
+    private globalChatMessagesRepo: Repository;
     constructor() {
         super();
         this.init();
@@ -74,7 +77,7 @@ export class GlobalChat extends Base {
     }
 
     // Lấy danh sách global chats
-    async getGlobalChats() {
+    async getGlobalChats() : Promise<GlobalChatResult[]> {
         try {
             return await this.repo.findMany({
                 orderBy: { updated_at: 'desc' },
@@ -84,6 +87,9 @@ export class GlobalChat extends Base {
                     chat_sequence: true,
                     title: true,
                     updated_at: true
+                },
+                _count: {
+                    global_chat_messages: true
                 }
             });
         } catch (error) {
@@ -169,7 +175,7 @@ export class GlobalChat extends Base {
     }
 
     // Xóa global chat
-    async deleteGlobalChatById(chatId: number): Promise<{ success: boolean; chatId: number }> {
+    async deleteGlobalChatById(chatId: string): Promise<{ success: boolean; chat_id: string }> {
         try {
             // Xóa tin nhắn trước
             await this.globalChatMessagesRepo.deleteBy({ chat_id: chatId });
@@ -179,7 +185,7 @@ export class GlobalChat extends Base {
 
             return { 
                 success: true, 
-                chatId: chatId 
+                chat_id: chatId 
             };
         } catch (error) {
             console.error('Lỗi khi xóa global chat:', error);
@@ -191,7 +197,7 @@ export class GlobalChat extends Base {
     async deleteGlobalChatHistory(): Promise<{ messagesDeleted: boolean; chatsDeleted: number }> {
         try {
             // Xóa tin nhắn
-            const messageDelete = await this.globalChatMessagesRepo.deleteAll();
+            const messageDelete = await this.globalChatMessagesRepo.bulkDeleteBy({});
 
             // Xóa chat
             const chatDelete = await this.repo.bulkDeleteBy({});
@@ -220,48 +226,6 @@ export class GlobalChat extends Base {
         } catch (error) {
             console.error('Lỗi khi cập nhật tiêu đề:', error);
             throw error;
-        }
-    }
-
-    // Tóm tắt và cập nhật tiêu đề
-    async summarizeAndUpdateGlobalChatTitle(userId: string, model: any): Promise<void> {
-        try {
-            const currentChat = await this.getCurrentGlobalChat();
-            
-            // Lấy 5 tin nhắn gần đây
-            const messages = await this.getGlobalChatMessages(currentChat.id, 5);
-
-            if (messages.length === 0) {
-                return;
-            }
-
-            // Tạo context cho AI
-            let context = messages.map(msg => 
-                `${msg.role === 'user' ? 'Người dùng' : 'AI'}: ${msg.content}`
-            ).reverse().join('\n');
-
-            // Prompt để tóm tắt
-            const prompt = `Dựa vào đoạn hội thoại sau, hãy tạo một tiêu đề ngắn gọn (dưới 50 ký tự) cho cuộc trò chuyện này:\n\n${context}\n\nTiêu đề:`;
-
-            // Gọi AI để tóm tắt
-            const result = await model.generateContent(prompt);
-            let title = result.response.text().trim();
-
-            // Đảm bảo tiêu đề không quá dài
-            if (title.length > 50) {
-                title = title.substring(0, 47) + '...';
-            }
-
-            // Thêm chat_id vào tiêu đề
-            title = `[${currentChat.chat_id}] ${title}`;
-
-            // Cập nhật tiêu đề
-            await this.updateChatTitle(currentChat.id, title);
-
-            console.log(`✅ Đã cập nhật tiêu đề cho cuộc trò chuyện ${currentChat.id}: ${title}`);
-
-        } catch (error) {
-            console.error('Lỗi khi tóm tắt cuộc trò chuyện:', error);
         }
     }
 }

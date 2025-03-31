@@ -1,12 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 
-interface FindOptions {
+export interface FindOptions {
   where?: Record<string, any>;
   select?: Record<string, any>;
   include?: Record<string, any>;
   skip?: number;
   take?: number;
   orderBy?: Record<string, any> | Array<Record<string, any>>;
+  _count?: Record<string, any>;
 }
 
 export class BaseRepo {

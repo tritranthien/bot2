@@ -1,11 +1,7 @@
 import "../utils/logger.js";
-import { getChannelId } from "../utils/database.js";
 import { Client, TextChannel } from "discord.js";
-interface Config {
-    sonId: string;
-    aiChannel: string;
-    camGif: string;
-}
+import { Config } from "../config";
+import { Setting } from "../models/setting"
 
 type MessageFunction = (config: Config) => string;
 
@@ -23,7 +19,8 @@ const MESSAGES: Messages = {
 
 export const sendChannelMessage = async (client: Client, config: Config, message: string): Promise<void> => {
     try {
-        const channelId = await getChannelId();
+        const settingM = new Setting();
+        const channelId = await settingM.getSetting(config.channeSpamSettingKey);
         const channel = client.channels.cache.get(channelId || config.aiChannel) as TextChannel;
 
         if (!channel) {

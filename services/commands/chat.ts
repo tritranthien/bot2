@@ -1,25 +1,48 @@
 // commands/chats.js
 import { EmbedBuilder } from 'discord.js';
+import { Message, GuildMember, Client } from 'discord.js';
 import '../../utils/logger.js';
 
-export default  {
+interface ChatData {
+    chat_id: string;
+    title: string;
+    updated_at: string;
+}
+
+interface ExecuteParams {
+    message: Message;
+    args: string[];
+    config: any;
+    logModAction: (action: string) => void;
+    sendEmbedMessage: (message: any) => void;
+    client: Client;
+    model: any;
+    chatM: {
+        getUserChats: (userId: string) => Promise<ChatData[]>;
+    };
+}
+
+export default {
     name: 'chats',
     description: 'Liệt kê danh sách cuộc trò chuyện đã lưu của bạn. 📚',
     
-    async execute({message, args, config, logModAction, sendEmbedMessage, client, model, chatM}) {
-        let userId = message.author.id;
-        let guildMember;
-        const member = message.mentions.members.first();
+    async execute({ message, args, config, logModAction, sendEmbedMessage, client, model, chatM }: ExecuteParams): Promise<void> {
+        let userId: string = message.author.id;
+        let guildMember: GuildMember | undefined;
+        const member = message.mentions.members?.first();
+        
         if (member) {
             userId = member.id;
-            guildMember = message.guild.members.cache.get(member.id);
+            guildMember = message.guild?.members.cache.get(member.id);
         }
+
         try {
             // Lấy danh sách cuộc trò chuyện của người dùng
-            const chats = await chatM.getUserChats(userId);
+            const chats: ChatData[] = await chatM.getUserChats(userId);
             
             if (chats.length === 0) {
-                return message.reply('Bạn chưa có cuộc trò chuyện nào. 🪹');
+                message.reply('Bạn chưa có cuộc trò chuyện nào. 🪹');
+                return;
             }
             
             // Tạo embed để hiển thị danh sách
@@ -31,7 +54,7 @@ export default  {
                 .setTimestamp();
             
             // Thêm thông tin các cuộc trò chuyện
-            chats.slice(0, 15).forEach((chat, index) => {
+            chats.slice(0, 15).forEach((chat: ChatData, index: number) => {
                 const date = new Date(chat.updated_at).toLocaleDateString('vi-VN');
                 const title = chat.title || `Cuộc trò chuyện ${chat.chat_id}`;
                 
@@ -45,9 +68,11 @@ export default  {
                 });
             });
             
-            // Gửi embed
-            await message.channel.send({ embeds: [embed] });
             
+            if ('send' in message.channel) {
+                message.channel.send({ embeds: [embed] });
+                
+            }
         } catch (error) {
             console.error(`Lỗi khi lấy danh sách cuộc trò chuyện: ${error.message}`);
             message.reply('Có lỗi xảy ra khi lấy danh sách cuộc trò chuyện. Vui lòng thử lại sau.');
