@@ -5,7 +5,7 @@ const path = require("path");
 const LOG_DIR = path.join(__dirname, "../logs");
 const LOG_FILE = path.join(LOG_DIR, "app.log");
 const VN_OFFSET = 7 * 60 * 60 * 1000; // UTC+7
-const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
+const EIGHT_DAYS = 8 * 24 * 60 * 60 * 1000;
 
 // Ensure log directory exists
 !fs.existsSync(LOG_DIR) && fs.mkdirSync(LOG_DIR, { recursive: true });
@@ -58,7 +58,7 @@ const scheduleLogDeletion = () => {
     const nowVN = new Date(now.getTime() + VN_OFFSET);
     const nextRunVN = new Date(nowVN);
 
-    nextRunVN.setDate(nowVN.getDate() + (nowVN.getHours() >= 0 ? 3 : 4));
+    nextRunVN.setDate(nowVN.getDate() + (nowVN.getHours() >= 0 ? 8 : 9));
     nextRunVN.setHours(0, 1, 0, 0);
 
     const nextRunUTC = new Date(nextRunVN.getTime() - VN_OFFSET);
@@ -76,7 +76,7 @@ const scheduleLogDeletion = () => {
 
     setTimeout(() => {
         deleteAndSchedule();
-        setInterval(deleteAndSchedule, THREE_DAYS);
+        setInterval(deleteAndSchedule, EIGHT_DAYS);
     }, delay);
 };
 
