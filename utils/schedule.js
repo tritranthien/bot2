@@ -10,6 +10,7 @@ if (process.env.APP_ENV === 'local') {
 const SEND_HOURS = [8, 10, 12, 14, 16, 18];
 
 const MESSAGES = {
+    9: (config) => `<@${config.sonId}>, chào buổi sáng! 🌅 Đã đến lúc khởi động ngày mới với một cú chích điện nhẹ nhàng! ⚡⚡`,
     12: (config) => `<@${config.sonId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm 🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
     14: (config) => `<@${config.sonId}>, 2h chiều rồi, có đặt nước không? 🧃🚰`,
     18: () => '⏱️ Bây giờ là 6h chiều, coookkkkkkkkkk 🏡🏡🏡 🍳🍲🍜'
@@ -26,6 +27,7 @@ const sendChannelMessage = async (client, config, message) => {
         }
 
         channel.send(message);
+        console.log(`✅ Tin nhắn đã được gửi thành công!`);
     } catch (error) {
         console.error("Lỗi khi gửi tin nhắn:", error);
     }
@@ -78,7 +80,6 @@ const scheduleNextMessage = (client, config) => {
                 `<@${config.sonId}>, đã tới thời gian chích điện định kỳ, đưa cổ đây, <${config.camGif}> "rẹt rẹt rẹt ...⚡⚡⚡"`);
         }
 
-        console.log(`✅ Tin nhắn cho ${nextHour}:00 đã được gửi thành công!`);
         console.log(`⏳ Đang lên lịch cho lần gửi tiếp theo...`);
 
         scheduleNextMessage(client, config);
