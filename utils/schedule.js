@@ -7,10 +7,10 @@ if (process.env.APP_ENV === 'local') {
 }
 
 // Danh sách giờ gửi tin nhắn
-const SEND_HOURS = [8, 10, 12, 14, 16, 18];
+const SEND_HOURS = [8, 9, 10, 12, 14, 16, 18];
 
 const MESSAGES = {
-    9: (config) => `<@${config.sonId}>, chào buổi sáng! 🌅 Đã đến lúc khởi động ngày mới với một cú chích điện nhẹ nhàng! ⚡⚡`,
+    9: (config) => `<@${config.sonId}>, **Đã Standup daily chưa** 🌅 Đến lúc khởi động ngày mới với một cú chích điện nhẹ nhàng! ⚡⚡`,
     12: (config) => `<@${config.sonId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm 🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
     14: (config) => `<@${config.sonId}>, 2h chiều rồi, có đặt nước không? 🧃🚰`,
     18: () => '⏱️ Bây giờ là 6h chiều, coookkkkkkkkkk 🏡🏡🏡 🍳🍲🍜'
