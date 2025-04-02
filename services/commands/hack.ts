@@ -1,8 +1,9 @@
-const hackedUsers = new Map(); // Lưu biệt danh cũ của user
-const usedNames = new Set(); // Lưu các tên đã được sử dụng
-const { saveSetting } = require("../utils/database.js");
+import { Message } from 'discord.js';
+import { Setting } from '../../models/setting';
+const hackedUsers: Map<string, string> = new Map(); // Lưu biệt danh cũ của user
+const usedNames: Set<string> = new Set(); // Lưu các tên đã được sử dụng
 
-const randomNames = [
+const randomNames: string[] = [
     "KevinMitnick", "AnonymousX", "LulzSec", "SnowdenX", "MafiaBoy",
     "DarkDante", "CyberPunk2077", "RootkitMaster", "ZeroCool", "AcidBurn",
     "GlitchKing", "WallHackGod", "AimbotX", "ESP_Legend", "LagSwitchMaster",
@@ -11,7 +12,7 @@ const randomNames = [
     "OverlordRoot", "TokyoPhantom", "NeonH4cker", "SAO_Glitch", "DeathNote1337"
 ];
 
-function getUniqueRandomName() {
+function getUniqueRandomName(): string {
     let availableNames = randomNames.filter(name => !usedNames.has(name));
 
     if (availableNames.length === 0) {
@@ -26,37 +27,46 @@ function getUniqueRandomName() {
     return randomName;
 }
 
-async function sendLoadingBar(message) {
-    const progressBar = [
+async function sendLoadingBar(message: Message): Promise<void> {
+    const progressBar: string[] = [
         "⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0%", "🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜ 10%", "🟩🟩⬜⬜⬜⬜⬜⬜⬜⬜ 20%",
         "🟩🟩🟩⬜⬜⬜⬜⬜⬜⬜ 30%", "🟩🟩🟩🟩⬜⬜⬜⬜⬜⬜ 40%", "🟩🟩🟩🟩🟩⬜⬜⬜⬜⬜ 50%",
         "🟩🟩🟩🟩🟩🟩⬜⬜⬜⬜ 60%", "🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜ 70%", "🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜ 80%",
         "🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜ 90%", "🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩 100%"
     ];
-
-    let msg = await message.channel.send(`📥 Downloading sensitive data... ${progressBar[0]}`);
+    let msg: Message | undefined;
+    if ('send' in message.channel) {
+        msg = await message.channel.send(`📥 Downloading sensitive data... ${progressBar[0]}`);
+    }
     for (let i = 1; i < progressBar.length; i++) {
         await new Promise(resolve => setTimeout(resolve, 300));
-        await msg.edit(`📥 Downloading sensitive data... ${progressBar[i]}`);
+        await msg?.edit(`📥 Downloading sensitive data... ${progressBar[i]}`);
     }
 }
 
-module.exports = {
+interface Config {
+    // Add any config properties here if needed
+}
+
+export default {
     name: 'hack',
     description: 'Hacker Mode! 😈💻',
-    async execute(message, args, config) {
-        const member = message.mentions.members.first() || message.member;
+    async execute(message: Message, args: string[], config: Config): Promise<void> {
+        const member = message.mentions.members?.first() || message.member;
 
         if (!member) {
-            return message.reply("❌ Bạn cần mention một user!");
+            message.reply("❌ Bạn cần mention một user!");
+            return;
         }
 
-        if (member.id === message.client.user.id) {
-            return message.reply("🚫 Bạn không thể hack tôi đâu! Tôi là AI bất khả xâm phạm! 🤖🔥");
+        if (member.id === message.client.user?.id) {
+            message.reply("🚫 Bạn không thể hack tôi đâu! Tôi là AI bất khả xâm phạm! 🤖🔥");
+            return;
         }
 
         if (!member.manageable) {
-            return message.reply(`⚠️ Không thể hack ${member} này, người này là chúa trời đã tạo ra tôi! .`);
+            message.reply(`⚠️ Không thể hack ${member} này, người này là chúa trời đã tạo ra tôi! .`);
+            return;
         }
 
         console.log(`[INFO] Đang hack user: ${member.user.username} (${member.id})`);
@@ -64,7 +74,7 @@ module.exports = {
         const randomName = getUniqueRandomName();
         const hackedNickname = `💀 HACKED USER ${randomName} 💀`;
 
-        const hackingMessages = [
+        const hackingMessages: string[] = [
             "[ACCESS GRANTED] 🔓",
             `📡 Đang xâm nhập vào hệ thống của ${member.user.username}...`,
             "💀 Injecting backdoor...",
@@ -73,35 +83,42 @@ module.exports = {
             `✅ Hack thành công! ${member}, giờ đã thuộc về chúng ta! 😈`
         ];
 
-        // Gửi từng tin nhắn hack với delay
         for (const msg of hackingMessages) {
-            await message.channel.send(msg);
+            if ('send' in message.channel) {
+                await message.channel.send(msg);
+            }
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
-        // Chạy loading bar xong mới gửi thông tin user
         await sendLoadingBar(message);
 
-        // Gửi thông tin người dùng sau khi loading xong
         const userInfo = `📜 **Thông tin đã lấy được của ${member}:**  \n` +
             `🔹 **Tên hiển thị:** ${member.displayName}  \n` +
             `🔹 **Tên tài khoản:** ${member.user.username}  \n` +
             `🔹 **ID:** ${member.id}  \n` +
             `🔹 **Ngày tham gia Discord:** <t:${Math.floor(member.user.createdTimestamp / 1000)}:F>  \n` +
-            `🔹 **Ngày vào server:** <t:${Math.floor(member.joinedTimestamp / 1000)}:F>  \n` +
+            `🔹 **Ngày vào server:** <t:${Math.floor(member.joinedTimestamp ?? Date.now() / 1000)}:F>  \n` +
             `🔹 **Vai trò:** ${member.roles.cache.map(role => role.name).join(", ")}`;
+        if ('send' in message.channel) {
+            await message.channel.send(userInfo);
+        }
 
-        await message.channel.send(userInfo);
-
-        // Đổi biệt danh sau khi hack xong
         try {
-            const oldNickname = member.nickname || member.user.username; // Lấy biệt danh cũ
-            await saveSetting(`hack-${member.id}`, oldNickname);
+            const oldNickname = member.nickname || member.user.username;
+            const SettingM = new Setting();
+            await SettingM.save({
+                key: `hack-${member.id}`,
+                value: oldNickname
+            });
             await member.setNickname(hackedNickname);
-            message.channel.send(`🛠️ Biệt danh của **${member}** đã bị thay đổi từ **"${oldNickname}"** thành **"${hackedNickname}"**!`);
+            if ('send' in message.channel) {
+                message.channel.send(`🛠️ Biệt danh của **${member}** đã bị thay đổi từ **"${oldNickname}"** thành **"${hackedNickname}"**!`);
+            }
         } catch (error) {
             console.error(`❌ Không thể đổi biệt danh của ${member.user.username}:`, error);
-            message.channel.send(`❌ Không thể đổi biệt danh của ${member} (Có thể bot không có quyền).`);
+            if ('send' in message.channel) {
+                message.channel.send(`❌ Không thể đổi biệt danh của ${member} (Có thể bot không có quyền).`);
+            }
         }
     },
     hackedUsers,
