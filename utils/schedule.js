@@ -17,6 +17,8 @@ const MESSAGES = {
     18: () => '⏱️ Bây giờ là 6h chiều, REPORT rồi coookkkk thôi mấy thằng nhókkkk 🏡🏡🏡 🍳🍲🍜',
 };
 
+let lastSentHour = null;
+
 const sendChannelMessage = async (client, config, message) => {
     try {
         const channelId = await getChannelId();
@@ -98,8 +100,9 @@ const scheduleAttendance = async (client, config) => {
 
             if (membersNotReplied.size > 0) {
                 const missingMembers = membersNotReplied.map(member => member.user.tag).join(', ');
-                channel.send(`⚠️ Danh sách những người vắng mặt sẽ bị chích điện ⚡: ${missingMembers}`);
-                channel.send(`Nhớ Stand Up Daily nhé 📃`);
+                console.log('Missing members:', missingMembers);
+                channel.send(`⏰ Đã hết thời gian điểm danh!`);
+                channel.send(`⚠️ Danh sách những người vắng mặt sẽ bị chích điện ⚡: ${missingMembers} \n \n Nhớ Stand Up Daily nhé 📃`);
             } else {
                 channel.send('🎉 Tất cả mọi người đã điểm danh!');
             }
@@ -119,10 +122,18 @@ const scheduleNextMessage = (client, config) => {
     }
 
     const { nextHour, timeUntil } = getNextScheduleTime();
+
+    console.log("⚡ gần nhất:", lastSentHour, "h:00");
+    if (nextHour === lastSentHour) {
+        console.log(`🚫 Đã gửi tin nhắn lúc ${nextHour}:00 rồi`);
+        return;
+    }
+
     console.log(`⚡ tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa 🤗)`);
+
     setTimeout(() => {
         console.log(`📢 Đang gửi tin nhắn cho ${nextHour}:00`);
-
+        
         if (nextHour === 9) {
             scheduleAttendance(client, config);
         } else if (SEND_HOURS.includes(nextHour)) {
@@ -131,8 +142,9 @@ const scheduleNextMessage = (client, config) => {
             sendChannelMessage(client, config, message);
         }
 
-        console.log(`⏳ Đang lên lịch cho lần gửi tiếp theo...`);
+        lastSentHour = nextHour;
 
+        console.log(`⏳ Đang lên lịch cho lần gửi tiếp theo...`);
         scheduleNextMessage(client, config);
     }, timeUntil);
 };
