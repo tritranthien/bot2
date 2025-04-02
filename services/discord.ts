@@ -6,9 +6,10 @@ import { dirname } from 'path';
 dotenv.config();
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
-import { Client, GatewayIntentBits, Message, TextChannel, GuildMember, Guild, Role, Channel, VoiceChannel, ForumChannel, CategoryChannel, ActivityType, PartialGuildMember } from 'discord.js';
+import { Client, GatewayIntentBits, Message, TextChannel, GuildMember, Guild, Role, Channel, VoiceChannel, ForumChannel, CategoryChannel, ActivityType, PartialGuildMember, EmbedBuilder, ColorResolvable } from 'discord.js';
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { Chat } from "../models/chat";
+import { sendEmbedMessage } from '../utils/helpers';
 
 interface Config {
   prefix: string;
@@ -21,7 +22,7 @@ interface CommandExecuteParams {
   args: string[];
   config: Config;
   logModAction: (action: string) => void;
-  sendEmbedMessage: (channel: TextChannel, embedOptions: any) => void;
+  sendEmbedMessage: (channel: TextChannel, author: any, content: string, color: ColorResolvable) => Promise<void>;
   client: Client;
   model: GenerativeModel;
   chatM: Chat;
@@ -101,7 +102,7 @@ class CommandService {
     args: string[],
     config: Config,
     logModAction: (action: string) => void,
-    sendEmbedMessage: (channel: TextChannel, embedOptions: any) => void,
+    sendEmbedMessage: (channel: TextChannel, author: any, content: string, color: ColorResolvable) => Promise<void>,
     client: Client,
     model: GenerativeModel
   ): Promise<void> {
@@ -191,8 +192,8 @@ class ModerationService {
     console.log(`Mod Action: ${action}`);
   }
 
-  sendEmbedMessage(channel: TextChannel, embedOptions: any): void {
-    // Triển khai logic gửi embed message
+  sendEmbedMessage(channel: TextChannel, author: any, content: string, color: ColorResolvable): Promise<void> {
+    return sendEmbedMessage(channel, author, content, color);
   }
 }
 
@@ -241,9 +242,7 @@ class DiscordBotService {
     try {
       const commandFiles = await readdir(path.join(__dirname, "commands"));
       await this.commandService.loadCommands(commandFiles);
-      console.log('Đã tải lệnh');
     } catch (error) {
-      console.log(error, 'lỗi tải lệnh');
       this.loggerService.error("Lỗi khi tải lệnh:", error);
     }
   }

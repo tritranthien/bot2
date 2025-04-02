@@ -2,6 +2,7 @@
 import { EmbedBuilder } from 'discord.js';
 import { Message, GuildMember, Client } from 'discord.js';
 import '../../utils/logger.js';
+import { ExecuteParams } from './types';
 
 interface ChatData {
     chat_id: string;
@@ -9,18 +10,6 @@ interface ChatData {
     updated_at: string;
 }
 
-interface ExecuteParams {
-    message: Message;
-    args: string[];
-    config: any;
-    logModAction: (action: string) => void;
-    sendEmbedMessage: (message: any) => void;
-    client: Client;
-    model: any;
-    chatM: {
-        getUserChats: (userId: string) => Promise<ChatData[]>;
-    };
-}
 
 export default {
     name: 'chats',

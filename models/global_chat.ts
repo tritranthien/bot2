@@ -1,8 +1,8 @@
 import { config } from "../config";
 const repoPath = config.repoPath || 'postgresql';
-import Base, { Repository } from "./base.js";
-const {GlobalChatRepo} = await import(`../repo/${repoPath}/global_chat.js`);
-const {GlobalChatMessageRepo} = await import(`../repo/${repoPath}/global_chat_message.js`);
+import Base, { Repository } from "./base";
+const {GlobalChatRepo} = await import(`../repo/${repoPath}/global_chat`);
+const {GlobalChatMessageRepo} = await import(`../repo/${repoPath}/global_chat_message`);
 
 export interface GlobalChatMessage {
     role: string;
@@ -28,7 +28,8 @@ interface CurrentChat {
 export class GlobalChat extends Base {
     private globalChatMessagesRepo: Repository;
     constructor() {
-        super(new GlobalChatRepo());
+        const repo = new GlobalChatRepo();
+        super(repo);
         this.globalChatMessagesRepo = new GlobalChatMessageRepo(); 
     }
 
@@ -49,7 +50,6 @@ export class GlobalChat extends Base {
             const chatId: string = `g${sequence}`;
 
             const newChat = await this.repo.save(
-                {},
                 {
                     chat_sequence: sequence,
                     chat_id: chatId,
@@ -81,11 +81,8 @@ export class GlobalChat extends Base {
                     chat_id: true,
                     chat_sequence: true,
                     title: true,
-                    updated_at: true
+                    updated_at: true,
                 },
-                _count: {
-                    global_chat_messages: true
-                }
             });
         } catch (error) {
             console.error('Lỗi khi lấy danh sách global chats:', error);
@@ -124,7 +121,6 @@ export class GlobalChat extends Base {
             const currentChat = await this.getCurrentGlobalChat();
 
             const message = await this.globalChatMessagesRepo.save(
-                {},
                 {
                     chat_id: currentChat.id,
                     user_id: userId,
@@ -136,8 +132,8 @@ export class GlobalChat extends Base {
 
             // Cập nhật thời gian của global chat
             await this.repo.save(
+                { updated_at: new Date() },
                 { id: currentChat.id },
-                { updated_at: new Date() }
             );
 
             return message.id;
@@ -211,15 +207,54 @@ export class GlobalChat extends Base {
     async updateChatTitle(chatId: number, title: string): Promise<boolean> {
         try {
             await this.repo.save(
-                { id: chatId },
                 { 
                     title, 
                     updated_at: new Date() 
-                }
+                },
+                { id: chatId }
             );
             return true;
         } catch (error) {
             console.error('Lỗi khi cập nhật tiêu đề:', error);
+            throw error;
+        }
+    }
+    async getMessageCount(chatId: number): Promise<number> {
+        try {
+            console.log(`Đếm tin nhắn cho chat ${chatId}:`);
+            
+            const count = await this.globalChatMessagesRepo.count({
+                where: { chat_id: chatId }
+            });
+            console.log(`Tổng tin nhắn: ${count}`);
+            return count;
+        } catch (error) {
+            console.error(`Lỗi khi đếm tin nhắn cho chat ${chatId}:`, error);
+            return 0;
+        }
+    }
+    
+    // Phiên bản nâng cao của getGlobalChats với số lượng tin nhắn
+    async getGlobalChatsWithMessageCounts(): Promise<GlobalChatResult[]> {
+        try {
+            const chats = await this.getGlobalChats();
+            
+            const chatsWithCounts = await Promise.all(
+                chats.map(async (chat) => {
+                    const messageCount = await this.getMessageCount(chat.id);
+                    
+                    return {
+                        ...chat,
+                        _count: {
+                            global_chat_messages: messageCount
+                        }
+                    };
+                })
+            );
+            
+            return chatsWithCounts;
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách global chats với số lượng tin nhắn:', error);
             throw error;
         }
     }

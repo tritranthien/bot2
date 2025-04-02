@@ -2,6 +2,7 @@ import { EmbedBuilder, Message } from 'discord.js';
 import { GlobalChat, GlobalChatMessage, GlobalChatResult } from '../../models/global_chat';
 import '../../utils/logger.js';
 import { ExecuteParams } from './types';
+import { GenerativeModel } from '@google/generative-ai';
 
 export default {
     name: 'gai',
@@ -24,8 +25,6 @@ export default {
                 return await this.deleteGlobalChatHistory(message, args[1]);
 
             default:
-                console.log("hello");
-                
                 return await this.processGlobalChatMessage(message, args, model, sendEmbedMessage);
         }
     },
@@ -71,7 +70,7 @@ export default {
     async showGlobalChatList(message: Message): Promise<void> {
         try {
             const globalChatM = new GlobalChat();
-            const chatList: GlobalChatResult[] = await globalChatM.getGlobalChats();
+            const chatList: GlobalChatResult[] = await globalChatM.getGlobalChatsWithMessageCounts();
 
             if (chatList.length === 0) {
                 message.reply('Chưa có cuộc trò chuyện nào. 🪹');
@@ -170,7 +169,7 @@ export default {
         }
     },
 
-    async processGlobalChatMessage(message: Message, args: string[], model: any, sendEmbedMessage: Function): Promise<void> {
+    async processGlobalChatMessage(message: Message, args: string[], model: GenerativeModel, sendEmbedMessage: Function): Promise<void> {
         if (!args.length) {
             message.reply('Vui lòng nhập nội dung để trò chuyện với AI. 💬');
             return;
@@ -183,7 +182,7 @@ export default {
         try {
             const globalChatM = new GlobalChat();
             if ('send' in message.channel) {
-                processingMsg = await message.channel.send('🤔 Đang xử lý...');
+                processingMsg = await message.channel.send('🤔 Đang xử lý 1...');
             }
             const currentChat = await globalChatM.getCurrentGlobalChat();
             let historyRows = await globalChatM.getGlobalChatMessages(currentChat.id, 5);
@@ -191,18 +190,19 @@ export default {
                 role: row.role,
                 parts: [{ text: row.content }]
             }));
+            console.log('Conversation:', conversation);
+            
             if (conversation.length === 0) {
                 try {
                     const result = await model.generateContent(prompt);
                     const content = result.response.text();
-                    const globalChatM = new GlobalChat();
                     await globalChatM.addGlobalChatMessage(userId, 'user', prompt, userName);
                     await globalChatM.addGlobalChatMessage(userId, 'model', content, userName);
                     await this.summarizeAndUpdateGlobalChatTitle(model);
                     await processingMsg?.delete();
                     await sendEmbedMessage(message.channel, message.author, content);
                 } catch (error: any) {
-                    console.error(`Lỗi khi gọi generateContent: ${error.message}`);
+                    console.log(`Lỗi khi gọi generateContent: ${error.message}`);
                     await processingMsg?.delete();
                     message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
                 }
@@ -225,6 +225,7 @@ export default {
                 await this.summarizeAndUpdateGlobalChatTitle(model);
                 await processingMsg?.delete();
                 await sendEmbedMessage(message.channel, message.author, content);
+                return;
             } catch (error: any) {
                 console.error(`Lỗi khi gọi startChat: ${error.message}`);
                 await processingMsg?.delete();
@@ -239,13 +240,14 @@ export default {
                     await globalChatM.addGlobalChatMessage(userId, 'model', content, userName);
                     await this.summarizeAndUpdateGlobalChatTitle(model);
                     await sendEmbedMessage(message.channel, message.author, content);
+                    return;
                 } catch (fallbackError: any) {
-                    console.error(`Lỗi khi thử lại với generateContent: ${fallbackError.message}`);
+                    console.log(`Lỗi khi thử lại với generateContent: ${fallbackError.message}`);
                     message.reply('Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
                 }
             }
         } catch (error: any) {
-            console.error(`❌ Lỗi trong chat toàn cục: ${error.message}`);
+            console.log(`❌ Lỗi trong chat toàn cục: ${error.message}`);
             message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
         }
     },

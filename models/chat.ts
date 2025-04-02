@@ -30,8 +30,8 @@ export class Chat extends Base {
     async getNextSequence(userId: string): Promise<number> {
         try {
             const userSequence = await this.repo.save(
+                { last_sequence: { increment: 1 } },
                 { user_id: userId },
-                { last_sequence: { increment: 1 } }
             );
             return userSequence.last_sequence;
         } catch (error) {
@@ -47,12 +47,12 @@ export class Chat extends Base {
             const chatId = `a${sequence}`;
 
             const newChat = await this.repo.save(
-                { user_id: userId },
                 {
                     chat_sequence: sequence,
                     chat_id: chatId,
                     title: `Cuộc trò chuyện ${sequence}`
-                }
+                },
+                { user_id: userId },
             );
 
             console.log(`✅ Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${newChat.id})`);
@@ -188,8 +188,8 @@ export class Chat extends Base {
             const chatDelete = await this.repo.deleteBy({ user_id: userId });
 
             await this.repo.save(
-                { user_id: userId },
-                { last_sequence: 0 }
+                { last_sequence: 0 },
+                { user_id: userId }
             );
 
             return {

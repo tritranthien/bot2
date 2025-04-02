@@ -14,18 +14,16 @@ export class BaseRepo {
     private prisma: PrismaClient;
     private tableName: string;
 
-    constructor({ tableName }: { tableName: string }) {
+    constructor({ tableName }: { tableName: string}) {
         this.prisma = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL });
-        if (tableName) {
-            this.tableName = tableName;
-        }
-        if (!this.prisma?.[tableName]) {
+        this.tableName = tableName;
+        if (!this.prisma[this.tableName as keyof PrismaClient]) {
             throw new Error(`Table ${tableName} not found`);
         }
     }
 
     getTable(): any {
-        return this.prisma?.[this.tableName];
+        return this.prisma[this.tableName as keyof PrismaClient];
     }
 
     setTableName(tableName: string): this {
@@ -62,7 +60,10 @@ export class BaseRepo {
             if (!upsertOptions.where) {
                 return await this.getTable().create({ data: row });
             }
-            return await this.getTable().upsert(upsertOptions);
+            return await this.getTable().update({
+                data: row,
+                where: upsertOptions.where
+            });
         } catch (error) {
             console.error('Save error:', error);
             return 0;
