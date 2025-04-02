@@ -10,12 +10,8 @@ import { Client, GatewayIntentBits, Message, TextChannel, GuildMember, Guild, Ro
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { Chat } from "../models/chat";
 import { sendEmbedMessage } from '../utils/helpers';
-
-interface Config {
-  prefix: string;
-  mutedRole: string;
-  modLogChannel: string;
-}
+import { scheduleNextMessage } from '../utils/schedule';
+import { Config } from '../config';
 
 interface CommandExecuteParams {
   message: Message;
@@ -37,7 +33,12 @@ class ConfigService {
     this.config = config || {
       prefix: '!',
       mutedRole: 'Muted',
-      modLogChannel: 'mod-log'
+      modLogChannel: 'mod-log',
+      sonId: '',
+      camGif: '',
+      aiChannel: '',
+      repoPath: '',
+      channeSpamSettingKey: ''
     };
   }
 
@@ -198,9 +199,8 @@ class ModerationService {
 }
 
 class ScheduleService {
-  scheduleNextMessage(client: Client): void {
-    // Triển khai logic lên lịch tin nhắn 
-    console.log('Đã thiết lập lịch tin nhắn');
+  scheduleNextMessage(client: Client, config: Config): void {
+    return scheduleNextMessage(client, config);
   }
 }
 
@@ -270,7 +270,7 @@ class DiscordBotService {
     
     this.client.user?.setActivity('!help để xem lệnh', { type: ActivityType.Watching });
     this.moderationService.ensureMutedRoleExists();
-    this.scheduleService.scheduleNextMessage(this.client);
+    this.scheduleService.scheduleNextMessage(this.client, this.configService.getConfig());
   }
 
   async onMessageReceived(message: Message): Promise<void> {
