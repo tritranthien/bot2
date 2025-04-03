@@ -1,9 +1,9 @@
-const db = require('../utils/database.js');
 require('../utils/logger');
+let db;
 if (process.env.APP_ENV == 'local') {
-    const db = require('../utils/sddatabase3.js');
+    db = require('../utils/sddatabase3.js');
 } else {
-    const db = require('../utils/database.js');
+    db = require('../utils/database.js');
 }
 const { EmbedBuilder } = require('discord.js');
 
@@ -175,7 +175,8 @@ module.exports = {
 
             messages.forEach(msg => {
                 const roleName = msg.role === 'user' ? '👤' : '🤖';
-                const uid = msg.role === 'user'? msg.name : "";
+                
+                const uid = (msg.role === 'user' && msg.name) ? msg.name : "";
                 embed.addFields({
                     name: `${roleName} ${uid}`,
                     value: msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''),
@@ -315,7 +316,7 @@ module.exports = {
                 }
             }
         } catch (error) {
-           console.error(`❌ Lỗi trong chat toàn cục: ${error.message}`);
+            console.error(`❌ Lỗi trong chat toàn cục: ${error.message}`);
             message.reply('❌ Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.');
         }
     },
