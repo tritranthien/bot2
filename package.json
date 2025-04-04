@@ -1,24 +1,55 @@
 {
   "name": "discordbot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "schema:select": "tsx utils/selectSchema.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "build:css": "npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css",
+    "watch:css": "npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch",
+    "create:admin": "tsx -r dotenv/config ./utils/admin.ts",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "npm run schema:select && npm run prisma:generate && npm run prisma:push && npm run build:css && tsc && node dist/index.js && tsx utils/admin.ts",
+    "dev": "concurrently \"npm run schema:select && npm run prisma:generate && npm run prisma:push\" \"nodemon\" \"npm run watch:css\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  "type": "module",
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
+    "@prisma/client": "^6.5.0",
+    "@tailwindcss/cli": "^4.0.17",
+    "@tailwindcss/vite": "^4.0.17",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^2.2.0",
+    "concurrently": "^9.1.2",
+    "cookie-parser": "^1.4.7",
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
     "express": "^4.21.2",
+    "express-ejs-layouts": "^2.5.1",
     "fs": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.0.0",
     "pg": "^8.14.1",
     "sqlite3": "^5.1.7",
-    "nodemon": "^3.0.0"
+    "tailwindcss": "^4.0.17"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/express": "^5.0.1",
+    "@types/express-ejs-layouts": "^2.5.4",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.13.14",
+    "prisma": "^6.5.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
   }
 }

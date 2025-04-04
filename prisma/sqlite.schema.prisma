@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("SQLITE_DATABASE_URL")
+}
+
+model user_sequence {
+  user_id        String  @id @map("user_id")
+  last_sequence  Integer @default(0) @map("last_sequence")
+  @@map("user_sequences")
+}
+
+model chat {
+  id            Integer   @id @default(autoincrement())
+  user_id       String    @map("user_id")
+  chat_sequence Integer   @map("chat_sequence")
+  chat_id       String    @map("chat_id")
+  title         String?
+  created_at    DateTime  @default(now()) @map("created_at")
+  updated_at    DateTime  @updatedAt @map("updated_at")
+  messages      chat_message[]
+  @@unique([user_id, chat_sequence])
+  @@map("chats")
+}
+
+model chat_message {
+  id        Integer   @id @default(autoincrement())
+  user_id   String    @map("user_id")
+  role      String
+  content   String
+  timestamp DateTime  @default(now())
+  chat      chat     @relation(fields: [chat_id], references: [id], onDelete: Cascade)
+  chat_id   Integer  @map("chat_id")
+  @@map("chat_messages")
+}
+
+model global_chat {
+  id            Integer   @id @default(autoincrement())
+  chat_sequence Integer   @map("chat_sequence")
+  chat_id       String    @map("chat_id")
+  creator_id    String    @map("creator_id")
+  title         String?
+  created_at    DateTime  @default(now()) @map("created_at")
+  updated_at    DateTime  @updatedAt @map("updated_at")
+  messages      global_chat_message[]
+  @@map("global_chats")
+}
+
+model global_chat_message {
+  id        Integer     @id @default(autoincrement())
+  user_id   String      @map("user_id")
+  name      String?
+  role      String
+  content   String
+  timestamp DateTime    @default(now())
+  chat      global_chat @relation(fields: [chat_id], references: [id], onDelete: Cascade)
+  chat_id   Integer     @map("chat_id")
+  @@map("global_chat_messages")
+}
+
+model setting {
+  id    Integer  @id @default(autoincrement())
+  key   String   @unique
+  value String?
+  @@map("settings")
+}

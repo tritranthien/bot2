@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="flex h-screen bg-gray-100">
+    <!-- Toast Notification -->
+    <div id="show-toast-id" class="hidden fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded shadow-lg"></div>
+    <!-- Sidebar -->
+    <div class="w-64 bg-gray-800 text-white flex flex-col p-5 space-y-4">
+        <div class="flex justify-between items-center">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i class="ph ph-layout"></i> Dashboard
+            </h2>
+            <!-- Avatar -->
+            <div class="relative group">
+                <div class="w-10 h-10 bg-blue-500 flex items-center justify-center rounded-full text-white font-bold cursor-pointer group-hover:ring-2 group-hover:ring-blue-300">
+                    <%= currentUser?.username.charAt(0).toUpperCase() %>
+                </div>
+                <!-- Dropdown Menu -->
+                <div class="absolute right-0 mt-2 w-36 bg-white text-gray-800 shadow-md rounded-lg opacity-0 scale-95 transform group-hover:opacity-100 group-hover:scale-100 transition-all origin-top-right text-sm">
+                    <a href="/update-password" class="flex items-center gap-2 px-3 py-1.5 w-full rounded-lg hover:bg-gray-200">🔑 Đổi mật khẩu</a>
+                    <button id="logoutBtn" class="flex items-center gap-2 px-3 py-1.5 w-full rounded-lg hover:bg-gray-200">🚪 Đăng xuất</button>
+                </div>
+            </div>
+        </div>
+        <nav class="space-y-2 mt-4">
+            <a href="/" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 <% if(activePage === 'home') { %>bg-gray-700<% } %>">
+                <i class="ph ph-users"></i> Users
+            </a>
+            <a href="/settings" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 <% if(activePage === 'settings') { %>bg-gray-700<% } %>">
+                <i class="ph ph-gear"></i> Settings
+            </a>
+            <a href="/futures" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 <% if(activePage === 'future') { %>bg-gray-700<% } %>">
+                <i class="ph ph-lightbulb"></i> Future
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6 flex justify-center">
+        <div class="w-full max-w-6xl">
+            <%- body %>
+        </div>
+    </div>
+
+    <script>
+        function showToast(message) {
+            const toast = document.getElementById("show-toast-id");
+            toast.textContent = message;
+            toast.classList.remove("hidden");
+            setTimeout(() => {
+                toast.classList.add("hidden");
+            }, 3000);
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const flashMessage = localStorage.getItem('flashMessage');
+            if (flashMessage) {
+                showToast(flashMessage);
+                localStorage.removeItem('flashMessage');
+            }
+        });
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            const response = await fetch("/auth/logout", {
+                method: "POST",
+            });
+            if (response.ok) {
+                window.location.href = "/login";
+            } else {
+                showToast("Đăng xuất thất bại!");
+            }
+        });
+    </script>
+    <%- typeof scripts !== 'undefined' ? scripts : '' %>
+</body>
+</html>

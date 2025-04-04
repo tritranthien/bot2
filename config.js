@@ -1,2 +1,0 @@
-temp=false
-avv="gggg"
