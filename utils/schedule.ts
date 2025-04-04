@@ -17,13 +17,8 @@ const MESSAGES: Messages = {
     18: (): string => '⏱️ Bây giờ là 6h chiều, coookkkkkkkkkk 🏡🏡🏡 🍳🍲🍜'
 };
 
-<<<<<<< HEAD:utils/schedule.js
-let lastSentHour = null;
-
-const sendChannelMessage = async (client, config, message) => {
-=======
+let lastSentHour: number | null = null;
 export const sendChannelMessage = async (client: Client, config: Config, message: string): Promise<void> => {
->>>>>>> new:utils/schedule.ts
     try {
         const settingM = new Setting();
         const channelId = config?.channeSpamSettingKey ? await settingM.getSetting(config.channeSpamSettingKey) : importedConfig.aiChannel;
@@ -143,15 +138,8 @@ export const scheduleNextMessage = async (client: Client, config: Config): Promi
     }
 
     console.log(`⚡ tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa 🤗)`);
-<<<<<<< HEAD:utils/schedule.js
-
-    setTimeout(() => {
-        console.log(`📢 Đang gửi tin nhắn cho ${nextHour}:00`);
-        
-=======
     setTimeout(async () => {
         console.log(`📢 Đang gửi tin nhắn cho ${nextHour}:00`);
->>>>>>> new:utils/schedule.ts
         if (nextHour === 9) {
             scheduleAttendance(client, config);
         } else if (SEND_HOURS.includes(nextHour)) {
@@ -165,11 +153,7 @@ export const scheduleNextMessage = async (client: Client, config: Config): Promi
 
         lastSentHour = nextHour;
 
-<<<<<<< HEAD:utils/schedule.js
         console.log(`⏳ Đang lên lịch cho lần gửi tiếp theo...`);
-        scheduleNextMessage(client, config);
-=======
         await scheduleNextMessage(client, importedConfig);
->>>>>>> new:utils/schedule.ts
     }, timeUntil);
 };
