@@ -2,7 +2,7 @@ import { config } from "../config.js";
 const repoPath = config.repoPath || 'postgresql';
 import { checkPassword, hashPassword } from "../utils/passHash.js";
 import jwt from 'jsonwebtoken';
-const {UserRepo} = await import(`../repo/${repoPath}/user`);
+const {UserRepo} = await import(`../repo/${repoPath}/user.js`);
 import Base from "./base.js";
 
 interface UserData {

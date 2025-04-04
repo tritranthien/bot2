@@ -8,10 +8,10 @@ export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
 import { Client, GatewayIntentBits, Message, TextChannel, GuildMember, Guild, Role, Channel, VoiceChannel, ForumChannel, CategoryChannel, ActivityType, PartialGuildMember, EmbedBuilder, ColorResolvable } from 'discord.js';
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
-import { Chat } from "../models/chat";
-import { sendEmbedMessage } from '../utils/helpers';
-import { scheduleNextMessage } from '../utils/schedule';
-import { Config } from '../config';
+import { Chat } from "../models/chat.js";
+import { sendEmbedMessage } from '../utils/helpers.js';
+import { scheduleNextMessage } from '../utils/schedule.js';
+import { Config, config } from '../config.js';
 
 interface CommandExecuteParams {
   message: Message;
@@ -38,7 +38,8 @@ class ConfigService {
       camGif: '',
       aiChannel: '',
       repoPath: '',
-      channeSpamSettingKey: ''
+      channeSpamSettingKey: '',
+      electricTargetKey: ''
     };
   }
 
@@ -46,7 +47,7 @@ class ConfigService {
     return this.config;
   }
 
-  getPrefix(): string {
+  getPrefix(): string | undefined {
     return this.config.prefix;
   }
 }
@@ -85,7 +86,7 @@ class CommandService {
   async loadCommands(commandFiles: string[]): Promise<void> {
     for (const file of commandFiles) {
       if (!file.endsWith(".js") && !file.endsWith(".ts")) continue;
-      if(file.startsWith("types.ts")) continue;
+      if(file.startsWith("types.ts") || file.startsWith("types.js")) continue;
       try {
         const filePath = pathToFileURL(path.join(__dirname, "commands", file)).href;
         const { default: command } = await import(filePath);
@@ -199,7 +200,7 @@ class ModerationService {
 }
 
 class ScheduleService {
-  scheduleNextMessage(client: Client, config: Config): void {
+  async scheduleNextMessage(client: Client, config: Config): Promise<void> {
     return scheduleNextMessage(client, config);
   }
 }
@@ -274,9 +275,9 @@ class DiscordBotService {
   }
 
   async onMessageReceived(message: Message): Promise<void> {
-    if (message.author.bot || !message.content.startsWith(this.configService.getPrefix())) return;
+    if (message.author.bot || !message.content.startsWith(this.configService.getPrefix() || '')) return;
 
-    const args = message.content.slice(this.configService.getPrefix().length).trim().split(/ +/);
+    const args = message.content.slice(this.configService.getPrefix()?.length || 0).trim().split(/ +/);
     const commandName = args.shift()?.toLowerCase() || '';
 
     try {

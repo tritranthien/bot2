@@ -1,7 +1,7 @@
 // commands/purge.js
 import { TextChannel } from 'discord.js';
 import '../../utils/logger.js';
-import { ExecuteParams, Command } from './types';
+import { ExecuteParams, Command } from './types.js';
 
 export default {
     name: 'purge',

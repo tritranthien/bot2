@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://dbot2_9iv3_user:Uaj6cjiHPvdtMCoNBElAg0rmz9LYMd69@dpg-cvh6vh5rie7s73ekuda0-a.singapore-postgres.render.com/dbot2_9iv3"
+  url      = env("DATABASE_URL")
 }
 
 model user_sequences {
@@ -68,6 +68,16 @@ model settings {
   value String?
   @@map("settings")
 }
+
+model users {
+  id        String   @id @default(uuid())
+  password  String
+  username  String @unique
+  role      UserRole @default(USER)
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  @@map("users")
+}
 enum UserRole {
   SUPER_ADMIN
   ADMIN
@@ -81,14 +91,4 @@ enum UserStatus {
   INACTIVE
   BLOCKED
   PENDING
-}
-
-model users {
-  id        String   @id @default(uuid())
-  password  String
-  username  String @unique
-  role      UserRole @default(USER)
-  status    UserStatus @default(ACTIVE)
-  createdAt DateTime @default(now())
-  @@map("users")
 }

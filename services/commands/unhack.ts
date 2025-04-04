@@ -1,6 +1,6 @@
-import hackS from './hack'; // Import danh sách hackedUsers và usedNames
+import hackS from './hack.js'; // Import danh sách hackedUsers và usedNames
 import { Message, GuildMember } from 'discord.js';
-import { Setting } from '../../models/setting';
+import { Setting } from '../../models/setting.js';
 const usedNames = hackS.usedNames;
 
 interface Config {

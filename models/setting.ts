@@ -1,4 +1,4 @@
-import { config } from "../config";
+import { config } from "../config.js";
 const repoPath: string = config.repoPath || 'postgresql';
 import Base from "./base.js";
 const {SettingRepo} = await import(`../repo/${repoPath}/setting.js`);
@@ -20,15 +20,15 @@ export class Setting extends Base {
         }, {});
     }
     async getSetting(key: string) {
-        const setting = await this.repo.findFirst({
-            where: {
+        const setting = await this.repo.findFirst(
+            {
                 key: key
             },
-            select: {
+            {
                 key: true,
                 value: true
             }
-        })
+        )
         return setting?.value;
     }
 }

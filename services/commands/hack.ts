@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import { Setting } from '../../models/setting';
+import { Setting } from '../../models/setting.js';
 const hackedUsers: Map<string, string> = new Map(); // Lưu biệt danh cũ của user
 const usedNames: Set<string> = new Set(); // Lưu các tên đã được sử dụng
 

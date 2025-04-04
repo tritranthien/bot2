@@ -40,7 +40,7 @@ export class BaseRepo {
         try {
             const upsertOptions: {
                 update: T;
-                create: T;  
+                create: T;
                 where?: Record<string, any>;
             } = {
                 update: row,
@@ -56,16 +56,14 @@ export class BaseRepo {
                     upsertOptions.where = { id };
                 }
             }
-            if (upsertOptions.where) {
-                let existingRow;
-                    existingRow = await this.getTable().findUnique({
-                        where: upsertOptions.where
-                    });
-                if (existingRow) {
-                    return await this.getTable().update({ where: upsertOptions.where, data: row });
-                }
+
+            if (!upsertOptions.where) {
+                return await this.getTable().create({ data: row });
             }
-            return await this.getTable().create({ data: row });
+            return await this.getTable().update({
+                data: row,
+                where: upsertOptions.where
+            });
         } catch (error) {
             console.error('Save error:', error);
             return 0;
@@ -96,16 +94,11 @@ export class BaseRepo {
     async findUnique<T>(
         id?: string | number,
         select?: Record<string, any>,
-        include?: Record<string, any>,
-        where?: Record<string, any>
+        include?: Record<string, any>
     ): Promise<T | null> {
         const findOptions: FindOptions = {};
         if (id) {
             findOptions.where = { id };
-        } else {
-            if (where) {
-                findOptions.where = where;    
-            }
         }
         if (select) {
             findOptions.select = select;

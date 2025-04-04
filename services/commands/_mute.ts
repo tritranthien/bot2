@@ -1,7 +1,7 @@
 // commands/mute.js
 import '../../utils/logger.js';
 import { Message, GuildMember, Role } from 'discord.js';
-import { Config } from '../../config';
+import { Config } from '../../config.js';
 interface Command {
     name: string;
     description: string;

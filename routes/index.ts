@@ -3,6 +3,9 @@ import { authenticateUser } from "../middlewares/auth.middleware.js";
 import AuthRoute from "./auth.js";
 import HomeRoute from "./home.js";
 import UserRoute from "./user.js";
+import SettingRoute from "./setting.js";
+import { HomeController } from '../controllers/Home.controller.js';
+const homeController: HomeController = new HomeController();
 
 export const Route = (app: Application): void => {
     app.use('/auth', AuthRoute);
@@ -23,14 +26,14 @@ export const Route = (app: Application): void => {
     app.get('/', (req: Request, res: Response): void => {
         res.redirect("/dashboard");
     });
-    
     app.get('/update-password', (req: Request, res: Response): void => {
         res.render('pages/user/update_password', { 
             title: 'Cập nhật mật khẩu',
             activePage: 'users',
         });
     });
-    
+    app.get('/futures', homeController.future);
     app.use('/dashboard', HomeRoute);
-    app.use('/user', UserRoute);
+    app.use('/users', UserRoute);
+    app.use('/settings', SettingRoute);
 }

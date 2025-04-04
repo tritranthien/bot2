@@ -1,7 +1,7 @@
 import { GenerativeModel } from "@google/generative-ai";
 import { Message } from "discord.js";
-import { Chat } from "../../models/chat";
-import { Config } from "../../config";
+import { Chat } from "../../models/chat.js";
+import { Config } from "../../config.js";
 
 export interface ExecuteParams {
     message: Message;

@@ -29,13 +29,13 @@
             </div>
         </div>
         <nav class="space-y-2 mt-4">
-            <a href="/users" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 <% if(activePage === 'users') { %>bg-gray-700<% } %>">
+            <a href="/" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 <% if(activePage === 'home') { %>bg-gray-700<% } %>">
                 <i class="ph ph-users"></i> Users
             </a>
             <a href="/settings" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 <% if(activePage === 'settings') { %>bg-gray-700<% } %>">
                 <i class="ph ph-gear"></i> Settings
             </a>
-            <a href="/future" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 <% if(activePage === 'future') { %>bg-gray-700<% } %>">
+            <a href="/futures" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 <% if(activePage === 'future') { %>bg-gray-700<% } %>">
                 <i class="ph ph-lightbulb"></i> Future
             </a>
         </nav>
@@ -75,5 +75,6 @@
             }
         });
     </script>
+    <%- typeof scripts !== 'undefined' ? scripts : '' %>
 </body>
 </html>

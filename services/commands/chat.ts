@@ -2,12 +2,13 @@
 import { EmbedBuilder } from 'discord.js';
 import { Message, GuildMember, Client } from 'discord.js';
 import '../../utils/logger.js';
-import { ExecuteParams } from './types';
+import { ExecuteParams } from './types.js';
+import { ChatInterface } from '../../models/chat.js';
 
 interface ChatData {
     chat_id: string;
     title: string;
-    updated_at: string;
+    updated_at?: string;
 }
 
 
@@ -27,7 +28,7 @@ export default {
 
         try {
             // Lấy danh sách cuộc trò chuyện của người dùng
-            const chats: ChatData[] = await chatM.getUserChats(userId);
+            const chats: ChatInterface[] = await chatM.getUserChats(userId);
             
             if (chats.length === 0) {
                 message.reply('Bạn chưa có cuộc trò chuyện nào. 🪹');
@@ -43,8 +44,8 @@ export default {
                 .setTimestamp();
             
             // Thêm thông tin các cuộc trò chuyện
-            chats.slice(0, 15).forEach((chat: ChatData, index: number) => {
-                const date = new Date(chat.updated_at).toLocaleDateString('vi-VN');
+            chats.slice(0, 15).forEach((chat: ChatInterface, index: number) => {
+                const date = chat.updated_at ? new Date(chat.updated_at).toLocaleDateString('vi-VN') : "Không xác định";
                 const title = chat.title || `Cuộc trò chuyện ${chat.chat_id}`;
                 
                 // Đảm bảo hiển thị chat_id nếu không có trong tiêu đề

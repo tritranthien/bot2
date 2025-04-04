@@ -1,5 +1,5 @@
 import { Message, GuildMember, Role, Collection } from 'discord.js';
-import { Config } from '../../config';
+import { Config } from '../../config.js';
 // commands/warn.js
 interface Warning {
     moderator: string;

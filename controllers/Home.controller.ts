@@ -1,7 +1,7 @@
 import { User } from "../models/user.js";
 import { BaseController } from "./Base.controller.js";
 import { Response } from 'express';
-import { Request } from "../interfaces/request";
+import { Request } from "../interfaces/request.js";
 export class HomeController extends BaseController {
     async index(req: Request, res: Response): Promise<void> {
         const users = await new User().findMany({
@@ -9,7 +9,7 @@ export class HomeController extends BaseController {
                 NOT: {
                     OR: [
                         { role: 'SUPER_ADMIN' },
-                        { id: req.user.id }
+                        { id: req.user?.id }
                     ]
                 }
             },
@@ -22,8 +22,14 @@ export class HomeController extends BaseController {
         });
         res.render('pages/home', { 
             title: 'Users',
-            activePage: 'users',
+            activePage: 'home',
             users
+        });
+    }
+    async future(req: Request, res: Response): Promise<void> {
+        res.render('pages/future', {
+            title: 'Futures',
+            activePage: 'futures'
         });
     }
 }

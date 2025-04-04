@@ -1,6 +1,6 @@
 import { Message, Collection, Snowflake } from 'discord.js';
 // commands/clear.js
-import { Command, ExecuteParams } from './types';
+import { Command, ExecuteParams } from './types.js';
 
 const command: Command = {
     name: 'clear',

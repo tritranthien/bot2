@@ -6,7 +6,7 @@ import { Message } from "discord.js";
 
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
-import { ExecuteParams } from "./types"
+import { ExecuteParams } from "./types.js"
 
 export default {
     name: "logs",

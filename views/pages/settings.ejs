@@ -1,0 +1,35 @@
+<h1 class="text-2xl font-semibold text-gray-700 mb-4">Cài đặt</h1>
+            <form class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-600" for="channel_spam_bot">AI Channel ID</label>
+                        <input type="text" id="channel_spam_bot" name="channel_spam_bot" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="saveSetting(event)" value="<%=settings.channel_spam_bot || '' %>" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-600" for="electric_target_id">Chích điện người này</label>
+                        <input type="text" id="electric_target_id" name="electric_target_id" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="<% settings.electric_target_id || '' %>" onchange="saveSetting(event)">
+                    </div>
+                </div>
+            </form>
+            <%- contentFor('scripts') %>
+            <script>
+                async function saveSetting(event) {
+                    const saved = await fetch('/settings/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            key: event.target.name,
+                            value: event.target.value 
+                        })
+                    });
+                    if (saved.ok) {
+                        showToast('Cài đặt đã được lưu');    
+                    } else {
+                        if (saved?.message) {
+                            showToast(saved?.message);
+                        } else {
+                            showToast('Có lỗi xảy ra, vui lòng thử lại sau');
+                        }
+                    }
+                }
+            </script>

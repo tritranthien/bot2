@@ -1,4 +1,4 @@
-import { HomeController } from "../controllers/Home.controller";
+import { HomeController } from "../controllers/Home.controller.js";
 import { Router } from 'express';
 
 const homeController: HomeController = new HomeController();

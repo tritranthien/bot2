@@ -1,4 +1,4 @@
-import { FindOptions } from "../repo/postgresql/base";
+import { FindOptions } from "../repo/postgresql/base.js";
 
 export interface Repository {
   save(record: any, where?: any): Promise<any>;

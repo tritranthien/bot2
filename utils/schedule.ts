@@ -1,27 +1,26 @@
 import "../utils/logger.js";
 import { Client, TextChannel } from "discord.js";
-import { Config } from "../config";
-import { Setting } from "../models/setting"
+import { Config, config as importedConfig } from "../config.js";
+import { Setting } from "../models/setting.js"
 
-type MessageFunction = (config: Config) => string;
+type MessageFunction = (options: Record<string, any>) => string;
 
 interface Messages {
     [key: number]: MessageFunction;
 }
 
 const SEND_HOURS = [8, 9, 10, 12, 14, 16, 18];
-
 const MESSAGES: Messages = {
     9: () => `<@everyone, Điểm danh nào! 📝 Bấm "co" nếu bạn có mặt!`,
-    12: (config: Config): string => `<@${config.sonId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm 🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
-    14: (config: Config): string => `<@${config.sonId}>, 2h chiều rồi, có đặt nước không? 🧃🚰`,
+    12: (options: Record<string, any>): string => `<@${options.sonId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm 🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
+    14: (options: Record<string, any>): string => `<@${options.sonId}>, 2h chiều rồi, có đặt nước không? 🧃🚰`,
     18: (): string => '⏱️ Bây giờ là 6h chiều, coookkkkkkkkkk 🏡🏡🏡 🍳🍲🍜'
 };
 
 export const sendChannelMessage = async (client: Client, config: Config, message: string): Promise<void> => {
     try {
         const settingM = new Setting();
-        const channelId = await settingM.getSetting(config.channeSpamSettingKey);
+        const channelId = config?.channeSpamSettingKey ? await settingM.getSetting(config.channeSpamSettingKey) : importedConfig.aiChannel;
         const channel = client.channels.cache.get(channelId || config.aiChannel) as TextChannel;
 
         if (!channel) {
@@ -70,7 +69,7 @@ export const getNextScheduleTime = (): ScheduleTime => {
 
 export const scheduleAttendance = async (client: Client, config: Config) => {
     const settingM = new Setting();
-    const channelId = await settingM.getSetting(config.channeSpamSettingKey);
+    const channelId = await settingM.getSetting(config.channeSpamSettingKey || 'channel_spam_bot') || config.aiChannel;
     const channel = client.channels.cache.get(channelId || config.aiChannel) as TextChannel;
 
     const { nextDate } = getNextScheduleTime();
@@ -118,7 +117,7 @@ export const scheduleAttendance = async (client: Client, config: Config) => {
     });
 };
 
-export const scheduleNextMessage = (client: Client, config: Config): void => {
+export const scheduleNextMessage = async (client: Client, config: Config): Promise<void> => {
     const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
     const dayOfWeek = nowVN.getDay();
 
@@ -126,22 +125,25 @@ export const scheduleNextMessage = (client: Client, config: Config): void => {
         console.log('😴 Hôm nay là Thứ Bảy hoặc Chủ Nhật, không lên lịch gửi tin nhắn.');
         return;
     }
-
+    const settingM = new Setting();
+    const sonId = await settingM.getSetting(config.electricTargetKey || 'electric_target_id');
     const { nextHour, timeUntil } = getNextScheduleTime();
     console.log(`⚡ tiếp theo vào ${nextHour}:00 (${Math.round(timeUntil / 60000)} phút nữa 🤗)`);
-    setTimeout(() => {
+    setTimeout(async () => {
         console.log(`📢 Đang gửi tin nhắn cho ${nextHour}:00`);
-
         if (nextHour === 9) {
             scheduleAttendance(client, config);
         } else if (SEND_HOURS.includes(nextHour)) {
-            const message = MESSAGES[nextHour]?.(config) || 
+            const options: Record<string, any> = { 
+                sonId: sonId,
+            };
+            const message = MESSAGES[nextHour]?.(options) || 
             `<@${config.sonId}>, đã tới thời gian chích điện định kỳ, đưa cổ đây, <${config.camGif}> "rẹt rẹt rẹt ...⚡⚡⚡"`;
             sendChannelMessage(client, config, message);
         }
 
         console.log(`⏳ Đang lên lịch cho lần gửi tiếp theo...`);
 
-        scheduleNextMessage(client, config);
+        await scheduleNextMessage(client, importedConfig);
     }, timeUntil);
 };

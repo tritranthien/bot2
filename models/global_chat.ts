@@ -1,8 +1,8 @@
-import { config } from "../config";
+import { config } from "../config.js";
 const repoPath = config.repoPath || 'postgresql';
-import Base, { Repository } from "./base";
-const {GlobalChatRepo} = await import(`../repo/${repoPath}/global_chat`);
-const {GlobalChatMessageRepo} = await import(`../repo/${repoPath}/global_chat_message`);
+import Base, { Repository } from "./base.js";
+const {GlobalChatRepo} = await import(`../repo/${repoPath}/global_chat.js`);
+const {GlobalChatMessageRepo} = await import(`../repo/${repoPath}/global_chat_message.js`);
 
 export interface GlobalChatMessage {
     role: string;

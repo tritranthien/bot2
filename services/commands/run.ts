@@ -1,6 +1,6 @@
 import { Message, GuildMember } from 'discord.js';
 // commands/run.ts
-import { ExecuteParams } from './types';
+import { ExecuteParams } from './types.js';
 export default {
     name: 'run',
     description: 'Chạy ngay điiiii! 🏃‍➡️',

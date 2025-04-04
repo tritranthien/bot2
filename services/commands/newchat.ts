@@ -1,8 +1,8 @@
 // commands/newchat.ts
-import '../../utils/logger';
+import '../../utils/logger.js';
 import {
     ExecuteParams
-} from "./types";
+} from "./types.js";
 export default {
     name: 'newchat',
     description: 'Start a new AI conversation. 🤖',

@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { Request } from '../interfaces/request';
+import { Request } from '../interfaces/request.js';
 import { checkPassword, hashPassword } from "../utils/passHash.js";
 import { User } from "../models/user.js";
 import { BaseController } from "./Base.controller.js";
@@ -73,7 +73,7 @@ export class UserController extends BaseController {
             res.status(404).send('User not found');
             return;
         }
-        if (ROLE_HIERARCHY[updateUser.role] >= ROLE_HIERARCHY[currentUser.role]) {
+        if (!currentUser || ROLE_HIERARCHY[updateUser.role as keyof typeof ROLE_HIERARCHY] >= ROLE_HIERARCHY[currentUser.role as keyof typeof ROLE_HIERARCHY]) {
             res.status(403).send('You are not allowed to update this user');
             return;
         }
@@ -93,7 +93,7 @@ export class UserController extends BaseController {
             res.status(404).send('User not found');
             return;
         }
-        if (ROLE_HIERARCHY[deleteUser.role] >= ROLE_HIERARCHY[currentUser.role]) {
+        if (!currentUser || ROLE_HIERARCHY[deleteUser.role as keyof typeof ROLE_HIERARCHY] >= ROLE_HIERARCHY[currentUser.role as keyof typeof ROLE_HIERARCHY]) {
             res.status(403).send('You are not allowed to delete this user');
             return ;
         }
@@ -108,6 +108,10 @@ export class UserController extends BaseController {
     async updatePassword(req: Request, res: Response): Promise<void> {
         const { currentPassword, newPassword, confirmPassword } = req.body as PasswordUpdateBody;
         const currentUser = req.user;
+        if (!currentUser?.id) {
+            res.status(401).send('Unauthorized');
+            return;
+        }
         const user = await new User().findFirst({ id: currentUser.id });
         if (!user) {
             res.status(404).send('User not found');

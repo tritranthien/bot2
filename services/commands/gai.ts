@@ -1,7 +1,7 @@
 import { EmbedBuilder, Message } from 'discord.js';
-import { GlobalChat, GlobalChatMessage, GlobalChatResult } from '../../models/global_chat';
+import { GlobalChat, GlobalChatMessage, GlobalChatResult } from '../../models/global_chat.js';
 import '../../utils/logger.js';
-import { ExecuteParams } from './types';
+import { ExecuteParams } from './types.js';
 import { GenerativeModel } from '@google/generative-ai';
 
 export default {
@@ -15,7 +15,7 @@ export default {
             case 'history':
                 return await this.showGlobalChatList(message, );
 
-            case 'newchat':
+            case 'newchat.js':
                 return await this.startNewGlobalChat(message);
 
             case 'continue':
@@ -190,7 +190,6 @@ export default {
                 role: row.role,
                 parts: [{ text: row.content }]
             }));
-            console.log('Conversation:', conversation);
             
             if (conversation.length === 0) {
                 try {

@@ -3,6 +3,7 @@ const repoPath = config.repoPath || 'postgresql';
 import Base, { Repository } from "./base.js";
 const {ChatRepo} = await import(`../repo/${repoPath}/chat.js`);
 const {ChatMessageRepo} = await import(`../repo/${repoPath}/chat_message.js`);
+const {UserSequenceRepo} = await import(`../repo/${repoPath}/usequence.js`);
 
 interface ChatMessage {
     id: string;
@@ -10,11 +11,12 @@ interface ChatMessage {
     content: string;
 }
 
-interface ChatInterface {
-    id: string;
+export interface ChatInterface {
+    id: number;
     chat_id: string;
     chat_sequence?: number;
     title?: string;
+    updated_at?: Date;
 }
 
 interface DeleteResult {
@@ -23,14 +25,21 @@ interface DeleteResult {
 
 export class Chat extends Base {
     private chatMessagesRepo: Repository;
+    private userSequenceRepo: Repository;
     constructor() {
         super(new ChatRepo());
         this.chatMessagesRepo = new ChatMessageRepo();
+        this.userSequenceRepo = new UserSequenceRepo();
     }
     async getNextSequence(userId: string): Promise<number> {
         try {
-            const userSequence = await this.repo.save(
-                { last_sequence: { increment: 1 } },
+            const last_sequence = await this.userSequenceRepo.findFirst(
+                { user_id: userId },
+                { last_sequence: true }
+            );
+            const nextSequence = last_sequence?.last_sequence ? last_sequence.last_sequence + 1 : 1;
+            const userSequence = await this.userSequenceRepo.save(
+                { last_sequence: nextSequence, user_id: userId },
                 { user_id: userId },
             );
             return userSequence.last_sequence;
@@ -41,7 +50,7 @@ export class Chat extends Base {
     }
 
     // Tạo chat mới
-    async createNewChat(userId: string): Promise<{id: string; chat_id: string; sequence: number}> {
+    async createNewChat(userId: string): Promise<{id: number; chat_id: string; sequence: number}> {
         try {
             const sequence = await this.getNextSequence(userId);
             const chatId = `a${sequence}`;
@@ -50,9 +59,15 @@ export class Chat extends Base {
                 {
                     chat_sequence: sequence,
                     chat_id: chatId,
-                    title: `Cuộc trò chuyện ${sequence}`
+                    title: `Cuộc trò chuyện ${sequence}`,
+                    user_id: userId
                 },
-                { user_id: userId },
+                {
+                    user_id_chat_sequence: {
+                        user_id: userId,
+                        chat_sequence: sequence
+                  }
+                },
             );
 
             console.log(`✅ Đã tạo cuộc trò chuyện mới cho user ${userId}: ${chatId} (ID: ${newChat.id})`);
@@ -104,7 +119,7 @@ export class Chat extends Base {
             if (!currentChat) {
                 return this.createNewChat(userId);
             }
-
+            
             return currentChat;
         } catch (error) {
             console.error('Lỗi khi lấy chat hiện tại:', error);
@@ -117,16 +132,14 @@ export class Chat extends Base {
         try {
             const currentChat = await this.getCurrentChat(userId);
 
-            const message = await this.repo.save({
-                data: {
-                    chat_id: currentChat.id,
-                    user_id: userId,
-                    role: role,
-                    content: content
-                }
+            const message = await this.chatMessagesRepo.save({
+                chat_id: currentChat.id,
+                user_id: userId,
+                role: role,
+                content: content,
             });
 
-            await this.repo.save({ updated_at: new Date() }, { id: currentChat.id });
+            await this.repo.save({ updated_at: new Date(), user_id: userId }, { id: currentChat.id });
 
             return message.id;
         } catch (error) {
@@ -136,9 +149,9 @@ export class Chat extends Base {
     }
 
     // Lấy tin nhắn của chat
-    async getChatMessages(chatId: string, limit: number = 10): Promise<ChatMessage[]> {
+    async getChatMessages(chatId: number, limit: number = 10): Promise<ChatMessage[]> {
         try {
-            const messages = await this.repo.findMany({
+            const messages = await this.chatMessagesRepo.findMany({
                 where: { chat_id: chatId },
                 orderBy: { id: 'desc' },
                 take: limit * 2,
@@ -148,7 +161,7 @@ export class Chat extends Base {
                     id: true
                 }
             });
-
+            
             return messages.reverse();
         } catch (error) {
             console.error('Lỗi khi lấy tin nhắn:', error);
@@ -187,7 +200,7 @@ export class Chat extends Base {
             const messageDelete = await this.chatMessagesRepo.deleteBy({ user_id: userId });
             const chatDelete = await this.repo.deleteBy({ user_id: userId });
 
-            await this.repo.save(
+            await this.userSequenceRepo.save(
                 { last_sequence: 0 },
                 { user_id: userId }
             );

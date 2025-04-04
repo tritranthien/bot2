@@ -1,4 +1,4 @@
-import { config } from "../config";
+import { config } from "../config.js";
 const repoPath: string = config.repoPath || 'postgresql';
 import Base, { Repository } from "./base.js";
 const {GlobalChatMessageRepo} = await import(`../repo/${repoPath}/global_chat_message.js`);

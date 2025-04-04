@@ -1,6 +1,6 @@
-import { scheduleAttendance } from "../../utils/schedule";
+import { scheduleAttendance } from "../../utils/schedule.js";
 import { Message } from "discord.js";
-import { Config } from "../../config";
+import { Config } from "../../config.js";
 
 interface Command {
     name: string;

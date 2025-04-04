@@ -1,5 +1,5 @@
 import { Message, User, GuildMember, Collection } from 'discord.js';
-import { Command, ExecuteParams } from './types';
+import { Command, ExecuteParams } from './types.js';
 interface Warning {
     moderator: string;
     timestamp: number;
@@ -33,8 +33,10 @@ export default {
         let infoText: string = `**💁 Thông tin người dùng: ${user.tag}**\nID: ${user.id}\nTạo tài khoản: ${new Date(user.createdAt).toLocaleString()}\nAvatar: ${user.displayAvatarURL({ size: 2048 })}`;
 
         if (member) {
-            infoText += `\n**💁 Thông tin thành viên Server 💁‍♀️:**\nBiệt danh: ${member.nickname || 'Không có'}\nTham gia server: ${new Date(member.joinedAt).toLocaleString()}\nVai trò: ${member.roles.cache.map(r => r.name).join(', ')}`;
+            const joinedAt = member.joinedAt ? new Date(member.joinedAt).toLocaleString() : "Không xác định";
+            infoText += `\n**💁 Thông tin thành viên Server 💁‍♀️:**\nBiệt danh: ${member.nickname || 'Không có'}\nTham gia server: ${joinedAt}\nVai trò: ${member.roles.cache.map(r => r.name).join(', ')}`;
         }
+        
 
         const warnings: Collection<string, Warning[]> = (message.client as any).warnings;
         if (warnings.has(user.id)) {

@@ -1,9 +1,9 @@
 import { GenerativeModel } from '@google/generative-ai';
 import { GuildMember, NewsChannel, TextChannel } from 'discord.js';
-import { Chat as ChatModel } from '../../models/chat';
+import { Chat as ChatModel } from '../../models/chat.js';
 import '../../utils/logger.js';
 
-import { ChatHistory, ChatMessage, ExecuteParams } from '../../interfaces/command/excuteParams';
+import { ChatHistory, ChatMessage, ExecuteParams } from '../../interfaces/command/excuteParams.js';
 
 export default {
     name: 'ai',

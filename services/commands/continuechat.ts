@@ -1,6 +1,6 @@
 // commands/continuechat.ts
 import { GuildMember } from 'discord.js';
-import { ChatMessage, ExecuteParams, Command } from './types';
+import { ChatMessage, ExecuteParams, Command } from './types.js';
 import '../../utils/logger.js';
 
 const command: Command = {

@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { ROLE_HIERARCHY } from './middlewares/auth.middleware.js';
 import DiscordBotService from './services/discord.js';
+import { config } from './config.js';
 
 dotenv.config();
 
@@ -31,13 +32,13 @@ interface RenderOptions {
   ROLE_HIERARCHY?: typeof ROLE_HIERARCHY;
   [key: string]: any;
 }
-const discordBot = new DiscordBotService();
+const discordBot = new DiscordBotService(config);
 discordBot.initialize().catch(console.error);
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../views'));
 app.use(express.json()); // Đọc dữ liệu JSON từ request body
 app.use(express.urlencoded({ extended: true })); // Đọc dữ liệu từ form
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(cookieParser());
 app.use(expressLayouts);
