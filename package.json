@@ -9,9 +9,9 @@
     "build:css": "npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css",
     "watch:css": "npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch",
     "create:admin": "tsx -r dotenv/config ./utils/admin.ts",
-    "build": "tsc",
+    "build": "npm run schema:select && npm run prisma:generate && npm run prisma:push && npm run build:css && tsx utils/admin.ts && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run schema:select && npm run prisma:generate && npm run prisma:push && npm run build:css && tsc && node dist/index.js && tsx utils/admin.ts",
+    "start": "node dist/index.js",
     "dev": "concurrently \"npm run schema:select && npm run prisma:generate && npm run prisma:push\" \"nodemon\" \"npm run watch:css\""
   },
   "keywords": [],
