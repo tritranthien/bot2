@@ -11,6 +11,7 @@ import { ROLE_HIERARCHY } from './middlewares/auth.middleware.js';
 import DiscordBotService from './services/discord.js';
 import { config } from './config.js';
 import './utils/logger.js';
+import './services/notify.js';
 
 dotenv.config();
 
