@@ -1,7 +1,13 @@
 import { Message } from 'discord.js';
 import { Setting } from '../../models/setting.js';
+import { Command,ExecuteParams } from './types.js';
 const hackedUsers: Map<string, string> = new Map(); // Lưu biệt danh cũ của user
 const usedNames: Set<string> = new Set(); // Lưu các tên đã được sử dụng
+
+interface HackCommand extends Command {
+    hackedUsers: Map<string, string>;
+    usedNames: Set<string>;
+}
 
 const randomNames: string[] = [
     "KevinMitnick", "AnonymousX", "LulzSec", "SnowdenX", "MafiaBoy",
@@ -44,14 +50,10 @@ async function sendLoadingBar(message: Message): Promise<void> {
     }
 }
 
-interface Config {
-    // Add any config properties here if needed
-}
-
 export default {
     name: 'hack',
     description: 'Hacker Mode! 😈💻',
-    async execute(message: Message, args: string[], config: Config): Promise<void> {
+    async execute({message, args, config}: ExecuteParams ): Promise<void> {
         const member = message.mentions.members?.first() || message.member;
 
         if (!member) {
@@ -123,4 +125,4 @@ export default {
     },
     hackedUsers,
     usedNames
-};
+} as HackCommand;

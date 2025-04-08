@@ -1,6 +1,6 @@
 import { Message, GuildMember } from 'discord.js';
 // commands/run.ts
-import { ExecuteParams } from './types.js';
+import { Command, ExecuteParams } from './types.js';
 export default {
     name: 'run',
     description: 'Chạy ngay điiiii! 🏃‍➡️',
@@ -17,4 +17,4 @@ export default {
         
         return message.reply(`Chạy đi ${member}, chạy điiiiii  🏃‍➡️🏃‍➡️🏃‍➡️`);
     },
-};
+} as Command;

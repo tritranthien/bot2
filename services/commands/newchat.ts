@@ -1,7 +1,8 @@
 // commands/newchat.ts
 import '../../utils/logger.js';
 import {
-    ExecuteParams
+    ExecuteParams,
+    Command
 } from "./types.js";
 export default {
     name: 'newchat',
@@ -29,4 +30,4 @@ export default {
             message.reply('🆘 Có lỗi xảy ra khi tạo cuộc trò chuyện mới. Vui lòng thử lại sau. 🆘');
         }
     },
-};
+} as Command;

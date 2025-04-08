@@ -86,10 +86,13 @@ class CommandService {
   async loadCommands(commandFiles: string[]): Promise<void> {
     for (const file of commandFiles) {
       if (!file.endsWith(".js") && !file.endsWith(".ts")) continue;
-      if(file.startsWith("types.ts") || file.startsWith("types.js")) continue;
+      if (file.startsWith("types.ts") || file.startsWith("types.js")) continue;
+  
       try {
-        const filePath = pathToFileURL(path.join(__dirname, "commands", file)).href;
-        const { default: command } = await import(filePath);
+        const absPath = path.join(__dirname, "commands", file);
+        const fileUrl = pathToFileURL(absPath).toString();
+  
+        const { default: command } = await import(fileUrl);
         this.commands.set(command.name, command);
         console.log(`✅ Loaded command: ${command.name}`);
       } catch (error) {

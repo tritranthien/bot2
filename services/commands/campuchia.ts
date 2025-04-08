@@ -1,8 +1,7 @@
 import { Message, GuildMember } from 'discord.js';
 import { Setting } from '../../models/setting.js';
 // commands/campuchia.js
-import { Config } from '../../config.js';
-import { ExecuteParams } from './types.js';
+import { ExecuteParams, Command } from './types.js';
 
 export default {
     name: 'campuchia',
@@ -35,4 +34,4 @@ export default {
 
         return message.reply(`á à, thằng này mày xứng đáng bị chích điện ${member} à, <${config.camGif}> hêy hêy 😠😠, "rẹt rẹt rẹt ..⚡..⚡..⚡"`);
     },
-};
+} as Command;

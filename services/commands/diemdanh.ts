@@ -1,17 +1,12 @@
 import { scheduleAttendance } from "../../utils/schedule.js";
 import { Message } from "discord.js";
 import { Config } from "../../config.js";
-
-interface Command {
-    name: string;
-    description: string;
-    execute: (message: Message, args: string[], config: Config) => Promise<void>;
-}
+import { ExecuteParams, Command } from "./types.js";
 
 const command: Command = {
     name: 'diemdanh',
     description: 'Điểm danh quân số 📃',
-    async execute(message: Message, args: string[], config: Config): Promise<void> {
+    async execute({message, args, config}: ExecuteParams): Promise<void> {
         try {
             await scheduleAttendance(message.client, config);
         } catch (error) {

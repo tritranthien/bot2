@@ -1,8 +1,17 @@
 import { EmbedBuilder, Message } from 'discord.js';
 import { GlobalChat, GlobalChatMessage, GlobalChatResult } from '../../models/global_chat.js';
 import '../../utils/logger.js';
-import { ExecuteParams } from './types.js';
+import { ExecuteParams, Command } from './types.js';
 import { GenerativeModel } from '@google/generative-ai';
+
+interface GlobalChatCommand extends Command {
+    showGlobalChatList(message: Message): Promise<void>;
+    startNewGlobalChat(message: Message): Promise<void>;
+    continueGlobalChat(message: Message, chatId: string): Promise<void>;
+    deleteGlobalChatHistory(message: Message, chatId: string | null): Promise<void>;
+    processGlobalChatMessage(message: Message, args: string[], model: GenerativeModel, sendEmbedMessage: Function): Promise<void>;
+    summarizeAndUpdateGlobalChatTitle(model: any): Promise<void>;
+}
 
 export default {
     name: 'gai',
@@ -13,7 +22,7 @@ export default {
 
         switch (subCommand) {
             case 'history':
-                return await this.showGlobalChatList(message, );
+                return await this.showGlobalChatList(message);
 
             case 'newchat.js':
                 return await this.startNewGlobalChat(message);
@@ -291,4 +300,4 @@ export default {
             console.error('Lỗi khi tóm tắt cuộc trò chuyện:', error);
         }
     }
-};
+} as GlobalChatCommand;

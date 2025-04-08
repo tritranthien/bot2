@@ -1,6 +1,6 @@
 // commands/clearai.ts
 import '../../utils/logger.js';
-import { ExecuteParams } from './types.js';
+import { ExecuteParams, Command } from './types.js';
 
 
 export default {
@@ -74,4 +74,4 @@ export default {
             message.reply('❌ Có lỗi xảy ra khi xóa lịch sử trò chuyện. Vui lòng thử lại sau.');
         }
     },
-};
+} as Command;

@@ -6,7 +6,7 @@ import { Message } from "discord.js";
 
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
-import { ExecuteParams } from "./types.js"
+import { Command, ExecuteParams } from "./types.js"
 
 export default {
     name: "logs",
@@ -29,4 +29,4 @@ export default {
             await message.reply("Không tìm thấy file log nào. 😵");
         }
     }
-};
+} as Command;

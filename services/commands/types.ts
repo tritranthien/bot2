@@ -37,5 +37,5 @@ export interface ChatHistory {
 export interface Command {
     name: string;
     description: string;
-    execute: (params: ExecuteParams) => Promise<void>;
+    execute: (params: ExecuteParams) => Promise<void | Message>;
 }

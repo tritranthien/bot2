@@ -3,7 +3,11 @@ import { GuildMember, NewsChannel, TextChannel } from 'discord.js';
 import { Chat as ChatModel } from '../../models/chat.js';
 import '../../utils/logger.js';
 
-import { ChatHistory, ChatMessage, ExecuteParams } from '../../interfaces/command/excuteParams.js';
+import { ChatHistory, ChatMessage, ExecuteParams, Command } from './types.js';
+interface AiCommand extends Command {
+    summarizeAndUpdateChatTitle: (userId: string, model: GenerativeModel) => Promise<void>;
+    generateChatTitle: (userId: string, model: GenerativeModel) => Promise<string>;
+}
 
 export default {
     name: 'ai',
@@ -143,4 +147,4 @@ export default {
             console.error(`❌ Lỗi khi tóm tắt cuộc trò chuyện: ${error.message}`);
         }
     }
-};
+} as AiCommand;

@@ -1,16 +1,13 @@
 import hackS from './hack.js'; // Import danh sách hackedUsers và usedNames
 import { Message, GuildMember } from 'discord.js';
 import { Setting } from '../../models/setting.js';
+import { ExecuteParams, Command } from './types.js';
 const usedNames = hackS.usedNames;
-
-interface Config {
-    // Add any config properties used in the command
-}
 
 export default {
     name: 'unhack',
     description: 'Khôi phục biệt danh cũ sau khi bị hack! 🛠️',
-    async execute(message: Message, args: string[], config: Config): Promise<void> {
+    async execute({message, args, config}: ExecuteParams): Promise<void> {
         const member: GuildMember | undefined = message.mentions.members?.first();
 
         if (!member) {
@@ -54,4 +51,4 @@ export default {
             }
         }
     },
-};
+} as Command;

@@ -3,20 +3,15 @@ import * as path from "path";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { Message } from "discord.js";
+import { ExecuteParams, Command } from "./types.js";
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
-
-interface Command {
-    name: string;
-    description: string;
-    execute: (message: Message, args: string[]) => Promise<Message>;
-}
 
 export default {
     name: "clearlog",
     description: "Xóa toàn bộ log trong thư mục logs",
-    async execute(message: Message, args: string[]): Promise<Message> {
-        const logDir = path.join(__dirname, "../logs");
+    async execute({message, args}: ExecuteParams): Promise<Message> {
+        const logDir = path.join(__dirname, "../../logs");
 
         try {
             const files = await fs.readdir(logDir);

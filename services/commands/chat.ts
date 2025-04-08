@@ -2,14 +2,8 @@
 import { EmbedBuilder } from 'discord.js';
 import { Message, GuildMember, Client } from 'discord.js';
 import '../../utils/logger.js';
-import { ExecuteParams } from './types.js';
+import { ExecuteParams, Command } from './types.js';
 import { ChatInterface } from '../../models/chat.js';
-
-interface ChatData {
-    chat_id: string;
-    title: string;
-    updated_at?: string;
-}
 
 
 export default {
@@ -68,4 +62,4 @@ export default {
             message.reply('Có lỗi xảy ra khi lấy danh sách cuộc trò chuyện. Vui lòng thử lại sau.');
         }
     },
-};
+} as Command;

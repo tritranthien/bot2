@@ -3,17 +3,7 @@ import * as fs from 'fs';
 import * as path from "path";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { Message } from 'discord.js';
-interface Config {
-    prefix: string;
-}
-
-interface Command {
-    default: {
-        name: string;
-        description: string;
-    }
-}
+import { ExecuteParams } from './types.js';
 
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
@@ -21,17 +11,33 @@ export const __dirname = dirname(__filename);
 export default {
     name: 'help',
     description: 'Xem danh sách lệnh quản lý server. 📚',
-    async execute(message: Message, args: string[], config: Config): Promise<void> {
-        const commandFiles = fs.readdirSync(path.resolve(__dirname)).filter(file => file.endsWith('.ts') && !file.startsWith('_') && file !== 'help.ts');
-        let helpText = '**Lệnh Quản Lý Server 📚**\n';
+    async execute({message, args, config}: ExecuteParams): Promise<void> {
+        const commandFiles = fs.readdirSync(path.resolve(__dirname)).filter(file => file.endsWith('.js') && !file.startsWith('_') && file !== 'help.js');
+        let helpText = '**Lệnh Quản Lý Server 📚**\n\n';
 
         for (const file of commandFiles) {
-            const command: Command = await import(path.resolve(__dirname, file));
-            helpText += `\`${config.prefix}${command.default.name}\` - ${command.default.description}\n`;
+            try {
+                const filePath = path.resolve(__dirname, file);
+                const fileUrl = new URL(`file://${filePath.replace(/\\/g, '/')}`);
+                const commandModule = await import(fileUrl.href);
+                
+                // Lấy command từ default export
+                const command = commandModule.default;
+                
+                if (command && command.name && command.description) {
+                    helpText += `\`${config.prefix}${command.name}\` - ${command.description}\n`;
+                } else {
+                    console.error(`Command in file ${file} is missing required properties:`, command);
+                    helpText += `\`${config.prefix}${file.replace('.js', '')}\` - *[Thiếu thông tin lệnh]*\n`;
+                }
+            } catch (error) {
+                console.error(`Error loading command from ${file}:`, error);
+                helpText += `\`${config.prefix}${file.replace('.js', '')}\` - *[Lỗi khi tải lệnh]*\n`;
+            }
         }
+        
         if ('send' in message.channel) {
             message.channel.send(helpText);
-            
         }
     },
 };
