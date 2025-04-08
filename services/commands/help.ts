@@ -12,7 +12,7 @@ export default {
     name: 'help',
     description: 'Xem danh sách lệnh quản lý server. 📚',
     async execute({message, args, config}: ExecuteParams): Promise<void> {
-        const commandFiles = fs.readdirSync(path.resolve(__dirname)).filter(file => file.endsWith('.js') && !file.startsWith('_') && file !== 'help.js');
+        const commandFiles = fs.readdirSync(path.resolve(__dirname)).filter(file => file.endsWith('.js') && !file.startsWith('_') && file !== 'help.js' && file !== 'types.js');
         let helpText = '**Lệnh Quản Lý Server 📚**\n\n';
 
         for (const file of commandFiles) {

@@ -296,6 +296,7 @@ class DiscordBotService {
       );
     } catch (error) {
       this.loggerService.error('Có lỗi xảy ra khi thực hiện lệnh.', error);
+      console.log(error, "Lỗi");
       message.reply('Có lỗi xảy ra khi thực hiện lệnh.');
     }
   }
