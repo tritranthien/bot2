@@ -1,36 +1,58 @@
 import { promises as fs } from "fs";
 import * as path from "path";
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import { Message } from "discord.js";
 import { ExecuteParams, Command } from "./types.js";
-export const __filename = fileURLToPath(import.meta.url);
-export const __dirname = dirname(__filename);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+function getTodayDate() {
+    const now = new Date();
+    return now.toISOString().split("T")[0]; // yyyy-mm-dd
+}
 
 export default {
     name: "clearlog",
-    description: "Xóa toàn bộ log trong thư mục logs",
-    async execute({message, args}: ExecuteParams): Promise<Message> {
-        const logDir = path.join(__dirname, "../../logs");
+    description: "Xoá log theo ngày hoặc toàn bộ log trong thư mục logs",
+    async execute({ message, args }: ExecuteParams): Promise<void> {
+        const logDir = path.join(__dirname, "../../../logs");
 
         try {
             const files = await fs.readdir(logDir);
-            console.error("Không tìm thấy file ⚠️:", files);
             if (!files.length) {
-                return message.reply("⚠️ Thư mục logs trống.");
+                await message.reply("⚠️ Thư mục logs trống.");
+                return;
             }
 
-            await Promise.all(
-                files.map(file => fs.unlink(path.join(logDir, file)))
-            );
-
-            return message.reply("✅ Đã xóa toàn bộ log trong thư mục logs.");
-        } catch (error: any) {
-            if (error.code === 'ENOENT') {
-                return message.reply("⚠️ Không có thư mục logs để xóa.");
+            // Xoá tất cả log
+            if (args[0] === "all") {
+                await Promise.all(
+                    files.map(file => fs.unlink(path.join(logDir, file)))
+                );
+                await message.reply("✅ Đã xoá toàn bộ log.");
+                return;
             }
-            console.error("Lỗi khi xóa log:", error);
-            return message.reply("❌ Lỗi khi xóa log!");
+
+            // Xác định tên file log cần xoá
+            const filename = args[0] || `app-${getTodayDate()}.log`;
+            const filePath = path.join(logDir, filename);
+
+            try {
+                await fs.unlink(filePath);
+                await message.reply(`🗑️ Đã xoá file log \`${filename}\``);
+            } catch (err: any) {
+                if (err.code === "ENOENT") {
+                    await message.reply(`⚠️ File log \`${filename}\` không tồn tại.`);
+                } else {
+                    console.error("Lỗi khi xoá log:", err);
+                    await message.reply(`❌ Không thể xoá log: ${err.message}`);
+                }
+            }
+        } catch (err: any) {
+            console.error("Lỗi khi đọc thư mục logs:", err);
+            await message.reply("❌ Không thể xoá log!");
         }
     }
 } as Command;

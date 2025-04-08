@@ -19,17 +19,21 @@ export default {
   name: "logs",
   description: "Lấy file log theo ngày từ thư mục logs 📝",
   async execute({ message, args }: ExecuteParams): Promise<void> {
-    const date = args[0] && isValidDateFormat(args[0]) ? args[0] : getTodayDate();
-    const logType = (args[1] === 'error') ? 'error' : 'app';
-    const logFileName = `${logType}-${date}.log`;
-    const logFilePath = path.join(__dirname, "../../../logs", logFileName);
+    let logFileName = args[0];
+    let logFilePath = path.join(__dirname, "../../../logs/", logFileName + ".log");
+    if (!logFilePath) {
+        const date = args[0] && isValidDateFormat(args[0]) ? args[0] : getTodayDate();
+        const logType = (args[1] === 'error') ? 'error' : 'app';
+        logFileName = `${logType}-${date}.log`;
+        logFilePath = path.join(__dirname, "../../../logs", logFileName);
+    }
 
     try {
       await fs.access(logFilePath); // check if file exists
 
       if ('send' in message.channel) {
         message.channel.send({
-          content: `📝 Log **${logType}** ngày **${date}**:`,
+          content: `📝 Log **${logFileName}**:`,
           files: [logFilePath]
         });
       }
