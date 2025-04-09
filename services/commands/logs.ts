@@ -21,7 +21,7 @@ export default {
   async execute({ message, args }: ExecuteParams): Promise<void> {
     let logFileName = args[0];
     let logFilePath = path.join(__dirname, "../../../logs/", logFileName + ".log");
-    if (!logFilePath) {
+    if (!logFileName) {
         const date = args[0] && isValidDateFormat(args[0]) ? args[0] : getTodayDate();
         const logType = (args[1] === 'error') ? 'error' : 'app';
         logFileName = `${logType}-${date}.log`;
