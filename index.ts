@@ -80,7 +80,7 @@ async function keepAlive(): Promise<void> {
   const settingM = new Setting();
   await settingM.save({
     key: 'keepAlive',
-    value: new Date().toISOString(),
+    value: new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
   }, {
     key: 'keepAlive',
   });
