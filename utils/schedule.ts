@@ -9,18 +9,21 @@ interface Messages {
     [key: number]: MessageFunction;
 }
 
+const settingM = new Setting();
+const electricTargetKey = importedConfig.electricTargetKey || '';
+const targetId = await settingM.getSetting(electricTargetKey);
+
 const SEND_HOURS = [8, 9, 10, 12, 14, 16, 18];
 const MESSAGES: Messages = {
     9: () => `<@everyone, Điểm danh nào! 📝 Bấm "co" nếu bạn có mặt!`,
-    12: (options: Record<string, any>): string => `<@${options.sonId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm 🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
-    14: (options: Record<string, any>): string => `<@${options.sonId}>, 2h chiều rồi, có đặt nước không? 🧃🚰`,
+    12: (options: Record<string, any>): string => `<@${targetId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm 🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
+    14: (options: Record<string, any>): string => `<@${targetId}>, 2h chiều rồi, có đặt nước không? 🧃🚰`,
     18: (): string => '⏱️ Bây giờ là 6h chiều, coookkkkkkkkkk 🏡🏡🏡 🍳🍲🍜'
 };
 
 let lastSentHour: number | null = null;
 export const sendChannelMessage = async (client: Client, config: Config, message: string): Promise<void> => {
     try {
-        const settingM = new Setting();
         const channelId = config?.channeSpamSettingKey ? await settingM.getSetting(config.channeSpamSettingKey) : importedConfig.aiChannel;
         const channel = client.channels.cache.get(channelId || config.aiChannel) as TextChannel;
 
