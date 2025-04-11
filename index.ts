@@ -81,6 +81,8 @@ async function keepAlive(): Promise<void> {
   await settingM.save({
     key: 'keepAlive',
     value: new Date().toISOString(),
+  }, {
+    key: 'keepAlive',
   });
   if (!url) return;
   
