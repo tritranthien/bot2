@@ -48,8 +48,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       options
         .map((b, i) => {
           const firstLink = b.content?.match(/https?:\/\/\S+/)?.[0] ?? null;
-          const preview = b.content?.slice(0, 100) || 'Không có mô tả';
-          return `**${i + 1}.** ${preview}${firstLink ? `\n${firstLink}` : ''}`;
+          return `**${i + 1}.**${firstLink ? `${firstLink}` : 'Không có link nào trong tin bookmark này.'}`;
         })
         .join('\n\n')
     )
