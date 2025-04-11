@@ -12,6 +12,8 @@ import DiscordBotService from './services/discord.js';
 import { config } from './config.js';
 import './utils/logger.js';
 import './services/notify.js';
+import { Setting } from './models/setting.js';
+
 
 dotenv.config();
 
@@ -73,8 +75,13 @@ app.listen(PORT, () => {
   console.log(`🖥️ Server đang chạy trên port: ${PORT}`);
 });
 
-function keepAlive(): void {
+async function keepAlive(): Promise<void> {
   const url = process.env.APP_URL;
+  const settingM = new Setting();
+  await settingM.save({
+    key: 'keepAlive',
+    value: new Date().toISOString(),
+  }, 'keepAlive');
   if (!url) return;
   
   fetch(url)
