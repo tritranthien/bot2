@@ -42,19 +42,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const options = bookmarks.slice(0, 25);
     const embed = new EmbedBuilder()
-      .setTitle(`📋 Vote chọn từ tag #${tag}`)
-      .setColor(0x00bfff)
-      .setDescription(
-        options
-          .map((b, i) => {
-            const firstLink = b.content?.match(/https?:\/\/\S+/)?.[0] ?? null;
-            const link = firstLink || b.messageLink || '#';
-            const preview = b.content?.slice(0, 100) || 'Không có mô tả';
-            return `**${i + 1}.** [Link](${link}) - ${preview}`;
-          })
-          .join('\n')
-      )
-      .setFooter({ text: `Bạn có 5 phút để vote (${options.length} lựa chọn)` });
+    .setTitle(`📋 Vote chọn từ tag #${tag}`)
+    .setColor(0x00bfff)
+    .setDescription(
+      options
+        .map((b, i) => {
+          const firstLink = b.content?.match(/https?:\/\/\S+/)?.[0] ?? null;
+          const preview = b.content?.slice(0, 100) || 'Không có mô tả';
+          return `**${i + 1}.** ${preview}${firstLink ? `\n${firstLink}` : ''}`;
+        })
+        .join('\n\n')
+    )
+    .setFooter({ text: `Bạn có 5 phút để vote (${options.length} lựa chọn)` });
+
 
     const rows: ActionRowBuilder<ButtonBuilder>[] = [];
     for (let i = 0; i < options.length; i++) {
@@ -67,7 +67,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       );
     }
 
+    const plainLinks = options
+      .map((b, i) => {
+        const firstLink = b.content?.match(/https?:\/\/\S+/)?.[0];
+        return firstLink ? `**${i + 1}.** ${firstLink}` : null;
+      })
+      .filter(Boolean)
+      .join('\n');
+
     const voteMessage = await interaction.editReply({
+      content: plainLinks || undefined,
       embeds: [embed],
       components: rows,
     });
