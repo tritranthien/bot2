@@ -4,8 +4,11 @@ import AuthRoute from "./auth.js";
 import HomeRoute from "./home.js";
 import UserRoute from "./user.js";
 import SettingRoute from "./setting.js";
+import DiscordRoute from "./discord.js";
 import { HomeController } from '../controllers/Home.controller.js';
+import { DiscordController } from '../controllers/Discord.controller.js';
 const homeController: HomeController = new HomeController();
+const discordController: DiscordController = new DiscordController();
 
 export const Route = (app: Application): void => {
     app.use('/auth', AuthRoute);
@@ -32,8 +35,9 @@ export const Route = (app: Application): void => {
             activePage: 'users',
         });
     });
-    app.get('/futures', homeController.future);
+    app.get('/futures', discordController.index.bind(discordController));
     app.use('/dashboard', HomeRoute);
     app.use('/users', UserRoute);
     app.use('/settings', SettingRoute);
+    app.use('/discord', DiscordRoute)
 }

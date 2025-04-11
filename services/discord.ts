@@ -6,12 +6,19 @@ import { dirname } from 'path';
 dotenv.config();
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
-import { Client, GatewayIntentBits, Message, TextChannel, GuildMember, Guild, Role, Channel, VoiceChannel, ForumChannel, CategoryChannel, ActivityType, PartialGuildMember, EmbedBuilder, ColorResolvable } from 'discord.js';
+import { Client, GatewayIntentBits, Message, TextChannel, GuildMember, Guild, Role, Channel, VoiceChannel, ForumChannel, CategoryChannel, ActivityType, PartialGuildMember, EmbedBuilder, ColorResolvable, Events, Interaction, ChatInputCommandInteraction, ButtonBuilder, ActionRowBuilder } from 'discord.js';
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { Chat } from "../models/chat.js";
 import { sendEmbedMessage } from '../utils/helpers.js';
 import { scheduleNextMessage } from '../utils/schedule.js';
 import { Config, config } from '../config.js';
+import { buildBookmarkEmbeds, buildCombinedBookmarkEmbed, buildDeleteButtonRow, buildEmbedForBookmark, buildPaginationButtons, fetchBookmarks } from '../libs/discord.js';
+import { Bookmarks } from '../models/bookmark.js';
+import * as bookmarkAdd from './slashCommands/bookmark-add.js';
+import * as bookmarkDelete from './slashCommands/bookmark-delete.js';
+import * as bookmarks from './slashCommands/bookmarks.js';
+import * as voteChoice from './slashCommands/votechoice.js';
+
 
 interface CommandExecuteParams {
   message: Message;
@@ -25,6 +32,14 @@ interface CommandExecuteParams {
 }
 
 const chatM = new Chat();
+const stashCommandMap = {
+  bookmarks: bookmarks,
+  bookmark: {
+    add: bookmarkAdd,
+    delete: bookmarkDelete
+  },
+  votechoice: voteChoice
+}
 
 class ConfigService {
   private config: Config;
@@ -267,6 +282,50 @@ class DiscordBotService {
     this.client.on('guildMemberRemove', (member: GuildMember | PartialGuildMember) => {
       this.moderationService.logMemberLeave(member);
     });
+    this.client.on(Events.InteractionCreate, async (interaction: Interaction) => {
+      if (!interaction.isChatInputCommand()) return;
+      switch (interaction.commandName) {
+        case 'bookmarks2':
+          await stashCommandMap['bookmarks'].execute(interaction);
+          break;
+        case 'bookmark':
+          const sub = interaction.options.getSubcommand();
+          if (sub) {
+            if (sub === 'add' || sub === 'delete') {
+              await stashCommandMap.bookmark[sub].execute(interaction);
+            }
+          }
+          break;
+        case 'votechoice':
+          await stashCommandMap['votechoice'].execute(interaction);
+          break;
+        default:
+          break;
+      }
+    });
+    this.client.on(Events.InteractionCreate, async (interaction: Interaction) => {
+      if (!interaction.isButton()) return;
+      if (interaction.customId.startsWith('bookmark:')) {
+        this.handleNextBookmarkPage(interaction);
+      }
+      // if (interaction.customId.startsWith('deleteBookmark:')) {
+      //   this.handleDeleteBookMark(interaction);    
+      // }
+      if (interaction.customId.startsWith('bookmark:delete:')) {
+        this.handleDeleteBookMark(interaction);    
+      }
+    });
+    this.client.on(Events.InteractionCreate, async (interaction) => {
+      if (!interaction.isStringSelectMenu()) return;
+      switch (interaction.customId) {
+        case 'bookmarks:select-tag':
+          this.handleSelectTag(interaction);
+          break;
+      
+        default:
+          break;
+      }
+    });
   }
 
   onBotReady(): void {
@@ -303,6 +362,107 @@ class DiscordBotService {
 
   async login(): Promise<void> {
     await this.client.login(process.env.DISCORD_TOKEN);
+  }
+  async handleNextBookmarkPage(interaction: Interaction): Promise<void> {
+    if (!interaction.isButton()) return;
+    const [, direction, currentPageStr, rawTag] = interaction.customId.split(':');
+    const currentPage = parseInt(currentPageStr);
+    const nextPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
+    const tags = rawTag ? rawTag.split(',') : null;
+    if (nextPage < 1 ) {
+      interaction.reply({ content: '🚫 Không còn bookmark nào ở trang này.', ephemeral: true });
+      return;
+    }
+    const bookmarks = await fetchBookmarks(interaction.user.id, nextPage, tags);
+  
+    if (bookmarks.length === 0) {
+      interaction.reply({ content: '🚫 Không còn bookmark nào ở trang này.', ephemeral: true });
+      return;
+    }
+  
+    const { embed, actionRows } = buildCombinedBookmarkEmbed(bookmarks);
+
+    const paginationRow = buildPaginationButtons(nextPage, tags);
+
+    await interaction.update({
+      content: `📄 Trang ${currentPage}`,
+      embeds: embed,
+      components: [...actionRows, paginationRow],
+    });
+  }
+  async handleDeleteBookMark(interaction: Interaction): Promise<void> {
+    if (!interaction.isButton()) return;
+  
+    const [, , bookmarkId, page = "1"] = interaction.customId.split(':');
+    const bM = new Bookmarks();
+    await bM.delete(bookmarkId);
+    const userId = interaction.user.id;
+    const bookmarks = await fetchBookmarks(userId, parseInt(page), null);
+  
+    const replyData = bookmarks.length === 0
+      ? {
+          content: '📭 Bạn không còn bookmark nào.',
+          embeds: [],
+          components: [],
+        }
+      : (() => {
+          const { embed, actionRows } = buildCombinedBookmarkEmbed(bookmarks);
+          const paginationRow = buildPaginationButtons(parseInt(page), null);
+          return {
+            content: `📄 Trang ${page}`,
+            embeds: embed,
+            components: [...actionRows, paginationRow],
+          };
+        })();
+  
+    try {
+      await interaction.editReply(replyData);
+    } catch (error: any) {
+      console.error('❌ Không thể editReply:', error);
+    }
+  }
+  async handleSelectTag(interaction: Interaction): Promise<void> {
+    if (!interaction.isStringSelectMenu()) return;
+    const selected = interaction.values;
+    const bM = new Bookmarks();
+    const page = 1;
+    let bookmarks;
+
+    if (selected.includes('__ALL__')) {
+      bookmarks = await fetchBookmarks(interaction.user.id, page, null);
+    } else {
+      bookmarks = await bM.findMany({
+        where: {
+          savedByUserId: interaction.user.id,
+          guildId: interaction.guildId!,
+          tags: {
+            hasSome: selected,
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * 4,
+        take: 4,
+      });
+    }
+
+    if (!bookmarks.length) {
+      await interaction.update({
+        content: '📭 Không tìm thấy bookmark nào.',
+        embeds: [],
+        components: [],
+      });
+      return;
+    }
+
+    const { embed, actionRows } = buildCombinedBookmarkEmbed(bookmarks);
+
+    const paginationRow = buildPaginationButtons(page, selected.includes('__ALL__') ? null : selected);
+
+    await interaction.update({
+      content: `📄 Trang ${page}`,
+      embeds: embed,
+      components: [...actionRows, paginationRow],
+    });
   }
 }
 

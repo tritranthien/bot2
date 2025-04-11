@@ -92,3 +92,19 @@ enum UserStatus {
   BLOCKED
   PENDING
 }
+
+model bookmarks {
+  id                String   @id @default(cuid())
+  guildId           String
+  channelId         String
+  messageId         String
+  messageLink       String
+  content           String
+  attachments       String[]
+  originalUserId    String
+  originalUsername  String
+  savedByUserId     String
+  savedByUsername   String
+  tags              String[]
+  createdAt         DateTime @default(now())
+}

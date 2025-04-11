@@ -1,1 +1,131 @@
-chưa có gì trong này
+<header class="w-full max-w-4xl mb-8">
+    <h1 class="text-4xl font-bold text-gray-800">Feature</h1>
+  </header>
+
+  <main class="w-full max-w-4xl bg-white p-6 rounded-2xl shadow-lg">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 relative">
+      <!-- Button: Hello -->
+      <div class="relative inline-block">
+        <button 
+          id="helloBtn"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-xl shadow transition"
+        >
+          Chích điện
+        </button>
+
+        <!-- Popup: Category Dropdown -->
+        <div 
+          id="categoryDropdown" 
+          class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg p-4 hidden z-10"
+        >
+          <h2 class="text-lg font-bold mb-2">Categories</h2>
+          <ul class="space-y-2">
+            <% servers.forEach(server => { %>
+              <li>
+                <button 
+                  class="category-btn w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 text-sm text-gray-700" 
+                  data-category="<%= server.id %>"
+                >
+                  <%= server.name %>
+                  <i class="ph ph-caret-right"></i>
+                </button>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Centered Product Modal -->
+  <div id="memberModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold">Products</h3>
+        <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+          <i class="ph ph-x text-xl"></i>
+        </button>
+      </div>
+      <ul id="memberList" class="space-y-4">
+        <!-- Product items will be injected here -->
+      </ul>
+    </div>
+  </div>
+  <%- contentFor('scripts') %>
+  <script>
+    const helloBtn = document.getElementById('helloBtn');
+    const categoryDropdown = document.getElementById('categoryDropdown');
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const memberModal = document.getElementById('memberModal');
+    const memberList = document.getElementById('memberList');
+    const closeModal = document.getElementById('closeModal');
+
+    const productData = {
+      1: [
+        { name: 'Apple', thumb: 'https://via.placeholder.com/40?text=A' },
+        { name: 'Banana', thumb: 'https://via.placeholder.com/40?text=B' },
+        { name: 'Orange', thumb: 'https://via.placeholder.com/40?text=O' }
+      ],
+      2: [
+        { name: 'Shampoo', thumb: 'https://via.placeholder.com/40?text=S' },
+        { name: 'Soap', thumb: 'https://via.placeholder.com/40?text=Sp' },
+        { name: 'Toothpaste', thumb: 'https://via.placeholder.com/40?text=T' }
+      ],
+      3: [
+        { name: 'Notebook', thumb: 'https://via.placeholder.com/40?text=N' },
+        { name: 'Pen', thumb: 'https://via.placeholder.com/40?text=P' },
+        { name: 'Eraser', thumb: 'https://via.placeholder.com/40?text=E' }
+      ]
+    };
+
+    helloBtn.addEventListener('click', () => {
+      categoryDropdown.classList.toggle('hidden');
+      memberModal.classList.add('hidden');
+    });
+
+    categoryButtons.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const categoryId = btn.getAttribute('data-category');
+        const members = await fetch(`/discord/${categoryId}/members`)
+          .then(response => response.json())
+        if (members?.data) {
+          console.log(members.data);
+          
+          memberList.innerHTML = members.data.map(member => `
+          <li class="flex items-center space-x-4 member-item cursor-pointer" key="${member.id}" onclick="">
+            <img src="${member.avatar}" alt="${member.displayName}" class="w-10 h-10 rounded-lg border" />
+            <span class="text-sm font-medium text-gray-800">${member.displayName}</span>
+          </li>
+        `).join('');
+        }
+        memberModal.classList.remove('hidden');
+        document.querySelectorAll('.member-item').forEach(item => {
+          item.addEventListener('click', async () => {
+            const memberId = item.getAttribute('key');
+            if (memberId) {
+              const fetchUrl = `/discord/${categoryId}/members/${memberId}/volt`;
+              const response = await fetch(fetchUrl);
+              if (response.ok) {
+                 showToast('Volt sent successfully!'); 
+              } else {
+                 showToast('Failed to send volt.');
+              }
+            }
+          });
+        });
+      });
+    });
+
+    closeModal.addEventListener('click', () => {
+      memberModal.classList.add('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!helloBtn.contains(e.target) &&
+          !categoryDropdown.contains(e.target) &&
+          !memberModal.contains(e.target)) {
+        categoryDropdown.classList.add('hidden');
+        memberModal.classList.add('hidden');
+      }
+    });
+  </script>

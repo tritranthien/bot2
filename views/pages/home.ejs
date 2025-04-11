@@ -2,7 +2,7 @@
         <!-- Create User Form -->
         <div class="bg-white p-4 rounded-lg shadow-md mb-6">
             <h2 class="text-lg font-semibold mb-2">Tạo người dùng mới</h2>
-            <form id="createUserForm" class="space-y-2" action="/user/create" method="POST">
+            <form id="createUserForm" class="space-y-2" action="/users/create" method="POST">
                 <input type="text" id="username" name="username" placeholder="Username" class="border p-2 w-full rounded">
                 <input type="password" id="password" name="password" placeholder="Password" class="border p-2 w-full rounded">
                 <select id="role" name="role" class="border p-2 w-full rounded">
@@ -70,7 +70,7 @@
             button.addEventListener("click", async (event) => {
                 const userId = event.target.getAttribute("data-id");
                 console.log(userId, event.target);
-                const response = await fetch(`/user/delete/${userId}`, {
+                const response = await fetch(`/users/delete/${userId}`, {
                     method: "DELETE"
                 });
                 if (response.ok) {
