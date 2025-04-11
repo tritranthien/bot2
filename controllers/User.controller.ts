@@ -28,7 +28,7 @@ export class UserController extends BaseController {
     
             const hashedPassword = await hashPassword(password);
             
-            const existingUser = await new User().findFirst({ where: { username } });
+            const existingUser = await new User().findFirst({ username });
             if (existingUser) {
                 res.status(400).send('Username already exists');
                 return;
@@ -66,9 +66,7 @@ export class UserController extends BaseController {
             updateData.password = hashedPassword;
         }
         const currentUser = req.user;
-        const updateUser = await userM.findFirst({
-            where: { id }
-        });
+        const updateUser = await userM.findFirst({id});
         if (!updateUser) {
             res.status(404).send('User not found');
             return;
