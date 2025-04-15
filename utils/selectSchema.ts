@@ -2,6 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,6 +17,8 @@ interface ProviderSchemas {
 
 function selectSchemaByProvider(): void {
   const databaseProvider = process.env.DATABASE_PROVIDER as DatabaseProvider || 'postgresql';
+  console.log('databaseProvider',databaseProvider);
+  
   const prismaDir = path.join(__dirname, '../prisma');
   const mainSchemaPath = path.join(prismaDir, 'schema.prisma');
 

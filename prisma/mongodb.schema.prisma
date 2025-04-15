@@ -8,62 +8,57 @@ datasource db {
 }
 
 model user_sequences {
-  id            String  @id @default(auto()) @map("_id") @db.ObjectId
-  user_id       String  @unique
-  last_sequence Int     @default(0)
-
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  user_id       String @unique @map("user_id")
+  last_sequence Int    @default(0) @map("last_sequence")
   @@map("user_sequences")
 }
 
 model chats {
   id            String         @id @default(auto()) @map("_id") @db.ObjectId
-  user_id       String
-  chat_sequence Int
-  chat_id       String
+  user_id       String         @map("user_id")
+  chat_sequence Int            @map("chat_sequence")
+  chat_id       String         @map("chat_id")
   title         String?
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
+  created_at    DateTime       @default(now()) @map("created_at")
+  updated_at    DateTime       @updatedAt @map("updated_at")
   messages      chat_messages[]
-
   @@unique([user_id, chat_sequence])
   @@map("chats")
 }
 
 model chat_messages {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  user_id   String
+  user_id   String   @map("user_id")
   role      String
   content   String
   timestamp DateTime @default(now())
-  chat      chats    @relation(fields: [chat_id], references: [id], onDelete: Cascade)
   chat_id   String   @db.ObjectId
-
+  chat      chats    @relation(fields: [chat_id], references: [id])
   @@map("chat_messages")
 }
 
 model global_chats {
-  id            String                 @id @default(auto()) @map("_id") @db.ObjectId
-  chat_sequence Int
-  chat_id       String
-  creator_id    String
+  id            String                @id @default(auto()) @map("_id") @db.ObjectId
+  chat_sequence Int                   @map("chat_sequence")
+  chat_id       String                @map("chat_id")
+  creator_id    String                @map("creator_id")
   title         String?
-  created_at    DateTime               @default(now())
-  updated_at    DateTime               @updatedAt
+  created_at    DateTime              @default(now()) @map("created_at")
+  updated_at    DateTime              @updatedAt @map("updated_at")
   messages      global_chat_messages[]
-
   @@map("global_chats")
 }
 
 model global_chat_messages {
   id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  user_id   String
+  user_id   String       @map("user_id")
   name      String?
   role      String
   content   String
   timestamp DateTime     @default(now())
-  chat      global_chats @relation(fields: [chat_id], references: [id], onDelete: Cascade)
   chat_id   String       @db.ObjectId
-
+  chat      global_chats @relation(fields: [chat_id], references: [id])
   @@map("global_chat_messages")
 }
 
@@ -71,32 +66,32 @@ model settings {
   id    String  @id @default(auto()) @map("_id") @db.ObjectId
   key   String  @unique
   value String?
-
   @@map("settings")
 }
 
 model users {
-  id        String     @id @default(uuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   password  String
-  username  String     @unique
-  role      UserRole   @default(USER)
-  status    UserStatus @default(ACTIVE)
-  createdAt DateTime   @default(now())
-
+  username  String   @unique
+  role      String   @default("USER")
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
   @@map("users")
 }
 
-enum UserRole {
-  SUPER_ADMIN
-  ADMIN
-  MANAGER
-  USER
-  GUEST
-}
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  BLOCKED
-  PENDING
+model bookmarks {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  guildId           String
+  channelId         String
+  messageId         String
+  messageLink       String
+  content           String
+  attachments       String[]
+  originalUserId    String
+  originalUsername  String
+  savedByUserId     String
+  savedByUsername   String
+  tags              String[]
+  createdAt         DateTime @default(now())
+  @@map("bookmarks")
 }
