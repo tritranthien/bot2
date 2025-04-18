@@ -22,7 +22,7 @@
   "type": "module",
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
-    "@prisma/client": "^6.5.0",
+    "@prisma/client": "^6.6.0",
     "@tailwindcss/cli": "^4.0.17",
     "@tailwindcss/vite": "^4.0.17",
     "bcrypt": "^5.1.1",
