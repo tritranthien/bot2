@@ -26,10 +26,10 @@ export class HomeController extends BaseController {
             users
         });
     }
-    async future(req: Request, res: Response): Promise<void> {
-        res.render('pages/future', {
-            title: 'Futures',
-            activePage: 'futures'
+    async feature(req: Request, res: Response): Promise<void> {
+        res.render('pages/feature', {
+            title: 'Features',
+            activePage: 'features'
         });
     }
 }

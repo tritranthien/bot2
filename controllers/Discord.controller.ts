@@ -30,16 +30,16 @@ export class DiscordController extends BaseController {
                 name: guild.name,
                 icon: guild.iconURL({ size: 1024 })
               }));
-            res.render('pages/future', {
+            res.render('pages/feature', {
                 title: 'Discord',
                 servers: guilds,
-                activePage: 'futures',
+                activePage: 'features',
             });
         } catch (error) {
-            res.render('pages/future', {
+            res.render('pages/feature', {
                 title: 'Discord',
                 servers: [],
-                activePage: 'futures',
+                activePage: 'features',
             });
             return;
         }

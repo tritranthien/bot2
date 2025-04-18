@@ -35,7 +35,7 @@ export const Route = (app: Application): void => {
             activePage: 'users',
         });
     });
-    app.get('/futures', discordController.index.bind(discordController));
+    app.get('/features', discordController.index.bind(discordController));
     app.use('/dashboard', HomeRoute);
     app.use('/users', UserRoute);
     app.use('/settings', SettingRoute);
