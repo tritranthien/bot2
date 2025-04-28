@@ -179,33 +179,21 @@ export const scheduleNextMessage = async (
         return;
     }
 
-    if (currentHour === nextHour && currentMinute < 5) {
-        console.log(
-            `⏰ Gửi ngay cho ${nextHour}:00 vì đang trong khoảng 5 phút đầu.`,
-        );
-        await sendMessageAtHour(client, config, nextHour, sonId);
-    } else {
-        const nextSendTime = new Date(nowVN);
-        nextSendTime.setHours(nextHour, 0, 0, 0);
+    const nextSendTime = new Date(nowVN);
+    nextSendTime.setHours(nextHour, 0, 0, 0);
 
-        const timeUntil = nextSendTime.getTime() - nowVN.getTime();
+    const timeUntil = nextSendTime.getTime() - nowVN.getTime();
 
-        console.log(
-            `⏳ Đợi ${Math.round(
-                timeUntil / 60000,
-            )} phút nữa để gửi lúc ${nextHour}:00`,
-        );
-
-        setTimeout(async () => {
-            await sendMessageAtHour(client, config, nextHour, sonId);
-            await scheduleNextMessage(client, config);
-        }, Math.max(timeUntil, 60000));
-        return;
-    }
+    console.log(
+        `⏳ Đợi ${Math.round(
+            timeUntil / 60000,
+        )} phút nữa để gửi tin nhắn vào ${nextHour}:00`
+    );
 
     setTimeout(async () => {
+        await sendMessageAtHour(client, config, nextHour, sonId);
         await scheduleNextMessage(client, config);
-    }, CHECK_INTERVAL_MS);
+    }, timeUntil);
 };
 
 async function sendMessageAtHour(
