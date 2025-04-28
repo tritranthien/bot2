@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import * as path from "path";
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import { Command, ExecuteParams } from "./types.js";
 
 export const __filename = fileURLToPath(import.meta.url);
@@ -19,26 +19,40 @@ export default {
   name: "logs",
   description: "Lấy file log theo ngày từ thư mục logs 📝",
   async execute({ message, args }: ExecuteParams): Promise<void> {
-    let logFileName = args[0];
-    let logFilePath = path.join(__dirname, "../../../logs/", logFileName + ".log");
-    if (!logFileName) {
-        const date = args[0] && isValidDateFormat(args[0]) ? args[0] : getTodayDate();
-        const logType = (args[1] === 'error') ? 'error' : 'app';
-        logFileName = `${logType}-${date}.log`;
-        logFilePath = path.join(__dirname, "../../../logs", logFileName);
+    const inputDate = args[0];
+    const logType = args[1] === "error" ? "error" : "app";
+
+    let date: string;
+
+    // 📌 Nếu nhập ngày, kiểm tra định dạng trước
+    if (inputDate) {
+      if (!isValidDateFormat(inputDate)) {
+        await message.reply(
+          `❌ Định dạng ngày không đúng. Vui lòng dùng dạng \`YYYY-MM-DD\`.`,
+        );
+        return;
+      }
+      date = inputDate;
+    } else {
+      date = getTodayDate();
     }
 
-    try {
-      await fs.access(logFilePath); // check if file exists
+    const logFileName = `${logType}-${date}.log`;
+    const logFilePath = path.join(__dirname, "../../../logs", logFileName);
 
-      if ('send' in message.channel) {
-        message.channel.send({
+    try {
+      await fs.access(logFilePath);
+
+      if ("send" in message.channel) {
+        await message.channel.send({
           content: `📝 Log **${logFileName}**:`,
-          files: [logFilePath]
+          files: [logFilePath],
         });
       }
     } catch (error) {
-      await message.reply(`❌ Không tìm thấy file log \`${logFileName}\`. Định dạng đúng: \`YYYY-MM-DD [app|error]\``);
+      await message.reply(
+        `❌ Không tìm thấy file log \`${logFileName}\` trong thư mục logs.`,
+      );
     }
-  }
+  },
 } as Command;
