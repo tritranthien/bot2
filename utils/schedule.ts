@@ -171,7 +171,8 @@ export const scheduleNextMessage = async (
 
     const currentHour = nowVN.getHours();
     const currentMinute = nowVN.getMinutes();
-    const nextHour = SEND_HOURS.find((h) => h >= currentHour);
+
+    const nextHour = SEND_HOURS.find((h) => h > currentHour);
 
     if (!nextHour) {
         console.log("✅ Hôm nay đã gửi hết các giờ cần gửi rồi.");
@@ -179,7 +180,6 @@ export const scheduleNextMessage = async (
     }
 
     if (currentHour === nextHour && currentMinute < 5) {
-        // Nếu app start trong vòng 5 phút đầu của giờ gửi => gửi luôn (restart 12h02, schedule 12h -> gửi luôn)
         console.log(
             `⏰ Gửi ngay cho ${nextHour}:00 vì đang trong khoảng 5 phút đầu.`,
         );
