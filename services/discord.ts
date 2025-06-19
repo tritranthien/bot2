@@ -217,11 +217,11 @@ class ModerationService {
   }
 }
 
-// class ScheduleService {
-//   async scheduleNextMessage(client: Client, config: Config): Promise<void> {
-//     return scheduleNextMessage(client, config);
-//   }
-// }
+class ScheduleService {
+  // async scheduleNextMessage(client: Client, config: Config): Promise<void> {
+  //   return scheduleNextMessage(client, config);
+  // }
+}
 
 class DiscordBotService {
   private client: Client;
@@ -333,7 +333,7 @@ class DiscordBotService {
     
     this.client.user?.setActivity('!help để xem lệnh', { type: ActivityType.Watching });
     this.moderationService.ensureMutedRoleExists();
-    this.scheduleService.scheduleNextMessage(this.client, this.configService.getConfig());
+    // this.scheduleService.scheduleNextMessage(this.client, this.configService.getConfig());
   }
 
   async onMessageReceived(message: Message): Promise<void> {
