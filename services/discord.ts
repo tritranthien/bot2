@@ -217,11 +217,11 @@ class ModerationService {
   }
 }
 
-class ScheduleService {
-  async scheduleNextMessage(client: Client, config: Config): Promise<void> {
-    return scheduleNextMessage(client, config);
-  }
-}
+// class ScheduleService {
+//   async scheduleNextMessage(client: Client, config: Config): Promise<void> {
+//     return scheduleNextMessage(client, config);
+//   }
+// }
 
 class DiscordBotService {
   private client: Client;

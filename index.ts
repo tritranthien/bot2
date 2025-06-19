@@ -13,6 +13,10 @@ import { config } from './config.js';
 import './utils/logger.js';
 import './services/notify.js';
 import { Setting } from './models/setting.js';
+import { defineMessageJob } from './src/jobs/agenda/scheduleJobs.js';
+import { agenda } from './utils/agenda.js';
+import { Client, GatewayIntentBits } from 'discord.js';
+import { scheduleDailyJobs } from './src/queues/agendaQueue.js';
 
 
 dotenv.config();
@@ -78,17 +82,52 @@ app.listen(PORT, () => {
 async function keepAlive(): Promise<void> {
   const url = process.env.APP_URL;
   const settingM = new Setting();
-  await settingM.save({
-    key: 'keepAlive',
-    value: new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
-  }, {
-    key: 'keepAlive',
-  });
+  const now = new Date();
+  const nowVN = new Date(
+    now.toLocaleString("en-US", {
+      timeZone: "Asia/Ho_Chi_Minh",
+    })
+  );
+  const hour = nowVN.getHours();
+  const minute = nowVN.getMinutes();
+  // 8h30 - 18h00
+  const isInTimeRange = (hour === 8 && minute >= 30) || (hour > 8 && hour < 18);
+  await settingM.save(
+    {
+      key: "keepAlive",
+      value: nowVN.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
+    },
+    {
+      key: "keepAlive",
+    }
+  );
   if (!url) return;
-  
-  fetch(url)
-    .then(res => console.log(`✅ Ping thành công lúc: ${new Date().toISOString()}`))
-    .catch(err => console.error(`❌ Ping thất bại: ${err}`));
+  try {
+    await fetch(url);
+    if (isInTimeRange) {
+      console.log(`✅ Ping thành công lúc: ${nowVN.toISOString()}`);
+    }
+  } catch (err) {
+    if (isInTimeRange) {
+      console.error(`❌ Ping thất bại: ${err}`);
+    }
+  }
 }
 
-setInterval(keepAlive, 12 * 60 * 1000);
+setInterval(keepAlive, 4 * 60 * 1000);
+
+(async () => {
+  defineMessageJob(
+    agenda,
+    new Client({
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+      ],
+    }),
+    config
+  );
+  await agenda.start();
+  await scheduleDailyJobs(); // Lên lịch các giờ trong ngày
+})();
