@@ -18,6 +18,9 @@ import * as bookmarkAdd from './slashCommands/bookmark-add.js';
 import * as bookmarkDelete from './slashCommands/bookmark-delete.js';
 import * as bookmarks from './slashCommands/bookmarks.js';
 import * as voteChoice from './slashCommands/votechoice.js';
+import { defineMessageJob } from '../src/jobs/agenda/scheduleJobs.js';
+import { agenda } from '../utils/agenda.js';
+import { scheduleDailyJobs } from '../src/queues/agendaQueue.js';
 
 
 interface CommandExecuteParams {
@@ -334,6 +337,15 @@ class DiscordBotService {
     this.client.user?.setActivity('!help để xem lệnh', { type: ActivityType.Watching });
     this.moderationService.ensureMutedRoleExists();
     // this.scheduleService.scheduleNextMessage(this.client, this.configService.getConfig());
+    (async () => {
+      defineMessageJob(
+        agenda,
+        this.client,
+        this.configService.getConfig()
+      );
+      await agenda.start();
+      await scheduleDailyJobs(); // Lên lịch các giờ trong ngày
+    })();
   }
 
   async onMessageReceived(message: Message): Promise<void> {

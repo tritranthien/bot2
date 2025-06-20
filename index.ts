@@ -13,10 +13,6 @@ import { config } from './config.js';
 import './utils/logger.js';
 import './services/notify.js';
 import { Setting } from './models/setting.js';
-import { defineMessageJob } from './src/jobs/agenda/scheduleJobs.js';
-import { agenda } from './utils/agenda.js';
-import { Client, GatewayIntentBits } from 'discord.js';
-import { scheduleDailyJobs } from './src/queues/agendaQueue.js';
 
 
 dotenv.config();
@@ -115,19 +111,3 @@ async function keepAlive(): Promise<void> {
 }
 
 setInterval(keepAlive, 4 * 60 * 1000);
-
-(async () => {
-  defineMessageJob(
-    agenda,
-    new Client({
-      intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-      ],
-    }),
-    config
-  );
-  await agenda.start();
-  await scheduleDailyJobs(); // Lên lịch các giờ trong ngày
-})();
