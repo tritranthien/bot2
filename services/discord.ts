@@ -331,21 +331,14 @@ class DiscordBotService {
     });
   }
 
-  onBotReady(): void {
+  async onBotReady(): Promise<void> {
     this.loggerService.log(`🤖 Bot đã sẵn sàng! Đăng nhập với tên ${this.client.user?.tag}`);
     
     this.client.user?.setActivity('!help để xem lệnh', { type: ActivityType.Watching });
     this.moderationService.ensureMutedRoleExists();
     // this.scheduleService.scheduleNextMessage(this.client, this.configService.getConfig());
-    (async () => {
-      defineMessageJob(
-        agenda,
-        this.client,
-        this.configService.getConfig()
-      );
-      await agenda.start();
-      await scheduleDailyJobs(); // Lên lịch các giờ trong ngày
-    })();
+    await agenda.start();
+    await scheduleDailyJobs(agenda, this.client, this.configService.getConfig());
   }
 
   async onMessageReceived(message: Message): Promise<void> {
