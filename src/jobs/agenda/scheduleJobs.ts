@@ -34,10 +34,9 @@ export const defineMessageJob = (
     const weekday = nowVN.getDay();
     const currentHour = nowVN.getHours();
 
+    console.log(`🚀 Running job: ${name} at ${currentHour}h`);
     if (weekday === 0 || weekday === 6) return;
     if (currentHour !== hour) return;
-
-    console.log(`🚀 Running job: ${name} at ${currentHour}h`);
 
     const message = MESSAGES[hour]
       ? MESSAGES[hour]({ targetId })
