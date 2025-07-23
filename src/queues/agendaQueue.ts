@@ -3,7 +3,7 @@ import { defineMessageJob } from '../jobs/agenda/scheduleJobs.js';
 import { Client } from 'discord.js';
 import { Config } from '../../config.js';
 
-const SEND_HOURS = [8, 9, 10, 12, 14, 16, 18];
+const SEND_HOURS = [8, 9, 10, 12, 14, 16, 17, 18];
 const toUtcHour = (vnHour: number) => (vnHour + 24 - 7) % 24;
 
 export const scheduleDailyJobs = async (

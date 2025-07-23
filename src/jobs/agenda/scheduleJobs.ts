@@ -7,9 +7,6 @@ import {
 } from "../../../utils/schedule.js";
 import { Agenda } from "agenda";
 
-// 🕓 Các khung giờ cần gửi message
-const SEND_HOURS = [8, 9, 10, 12, 14, 16, 18];
-
 // 📩 Nội dung theo từng khung giờ
 const MESSAGES: { [key: number]: (options: { targetId: string }) => string } = {
   9: () => `<@everyone>, Điểm danh nào! 📝 Bấm "co" nếu bạn có mặt!`,

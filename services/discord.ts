@@ -18,7 +18,6 @@ import * as bookmarkAdd from './slashCommands/bookmark-add.js';
 import * as bookmarkDelete from './slashCommands/bookmark-delete.js';
 import * as bookmarks from './slashCommands/bookmarks.js';
 import * as voteChoice from './slashCommands/votechoice.js';
-import { defineMessageJob } from '../src/jobs/agenda/scheduleJobs.js';
 import { agenda } from '../utils/agenda.js';
 import { scheduleDailyJobs } from '../src/queues/agendaQueue.js';
 
