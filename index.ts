@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { Route } from './routes/index.js';
 import cookieParser from 'cookie-parser';
-import expressLayouts from 'express-ejs-layouts'
+import expressLayouts from 'express-ejs-layouts';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { ROLE_HIERARCHY } from './middlewares/auth.middleware.js';
@@ -14,11 +14,12 @@ import './utils/logger.js';
 import './services/notify.js';
 import { Setting } from './models/setting.js';
 
-
 dotenv.config();
 
 const app = express();
-const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+
+// ❌ KHÔNG dùng app.listen trên Vercel
+// const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
 export const __filename: string = fileURLToPath(import.meta.url);
 export const __dirname: string = dirname(__filename);
@@ -36,20 +37,24 @@ interface RenderOptions {
   ROLE_HIERARCHY?: typeof ROLE_HIERARCHY;
   [key: string]: any;
 }
+
+// ✅ Khởi động bot như cũ
 const discordBot = new DiscordBotService(config);
 discordBot.initialize().catch(console.error);
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
-app.use(express.json()); // Đọc dữ liệu JSON từ request body
-app.use(express.urlencoded({ extended: true })); // Đọc dữ liệu từ form
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(cookieParser());
 app.use(expressLayouts);
+
 app.use((req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies.accessToken;
   const originalRender = res.render;
-  res.render = function(view: string, options: RenderOptions = {}) {
+  res.render = function (view: string, options: RenderOptions = {}) {
     let user: User | null = null;
     if (token) {
       try {
@@ -69,32 +74,34 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-app.set('layout', 'layouts/main')
+app.set('layout', 'layouts/main');
 Route(app);
-app.listen(PORT, () => {
-  console.log(`🖥️ Server đang chạy trên port: ${PORT}`);
-});
 
+// ❌ KHÔNG có listen()
+// ✅ Xuất app để Vercel dùng
+export default app;
+
+// ✅ Hàm keepAlive vẫn để đó nếu cần dùng chỗ khác
 async function keepAlive(): Promise<void> {
   const url = process.env.APP_URL;
   const settingM = new Setting();
   const now = new Date();
   const nowVN = new Date(
-    now.toLocaleString("en-US", {
-      timeZone: "Asia/Ho_Chi_Minh",
+    now.toLocaleString('en-US', {
+      timeZone: 'Asia/Ho_Chi_Minh',
     })
   );
   const hour = nowVN.getHours();
   const minute = nowVN.getMinutes();
-  // 8h30 - 18h00
-  const isInTimeRange = (hour === 8 && minute >= 30) || (hour > 8 && hour < 18);
+  const isInTimeRange =
+    (hour === 8 && minute >= 30) || (hour > 8 && hour < 18);
   await settingM.save(
     {
-      key: "keepAlive",
-      value: nowVN.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
+      key: 'keepAlive',
+      value: nowVN.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
     },
     {
-      key: "keepAlive",
+      key: 'keepAlive',
     }
   );
   if (!url) return;
@@ -109,5 +116,3 @@ async function keepAlive(): Promise<void> {
     }
   }
 }
-
-// setInterval(keepAlive, 4 * 60 * 1000);
