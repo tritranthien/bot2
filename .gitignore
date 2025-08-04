@@ -4,3 +4,6 @@ package-lock.json
 /data/*.db
 /logs/*.log
 /src/output.css
+git add -f prisma/schema.prisma
+git add -f node_modules/.prisma
+git add -f node_modules/@prisma/client
