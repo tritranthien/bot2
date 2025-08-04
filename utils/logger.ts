@@ -4,11 +4,21 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const MAX_LOG_AGE_DAYS = 14;
 
-const logDir = path.join(__dirname, "../../logs");
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
+// Detect serverless environment (Vercel, AWS Lambda...)
+const isReadOnlyFS = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+const baseLogDir = isReadOnlyFS ? "/tmp" : path.join(__dirname, "../../");
+const logDir = path.join(baseLogDir, "logs");
+
+// Ensure log directory exists
+try {
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn(`⚠️ Cannot create log directory: ${(err as Error).message}`);
 }
 
 function getLogFilePath(type: "app" | "error") {
@@ -18,9 +28,14 @@ function getLogFilePath(type: "app" | "error") {
 
 function writeLogToFile(filePath: string, message: string) {
   const timestamp = new Date().toISOString();
-  fs.appendFileSync(filePath, `[${timestamp}] ${message}\n`, "utf8");
+  try {
+    fs.appendFileSync(filePath, `[${timestamp}] ${message}\n`, "utf8");
+  } catch (err) {
+    console.warn(`⚠️ Cannot write log: ${(err as Error).message}`);
+  }
 }
 
+// Override console.log
 const originalLog = console.log;
 console.log = (...args: any[]) => {
   const message = args
@@ -30,6 +45,7 @@ console.log = (...args: any[]) => {
   originalLog(...args);
 };
 
+// Override console.error
 const originalError = console.error;
 console.error = (...args: any[]) => {
   const message = args
@@ -39,8 +55,10 @@ console.error = (...args: any[]) => {
   originalError(...args);
 };
 
-// 🧹 Xóa log cũ hơn 14 ngày
+// Delete old logs (only in environments with write access)
 async function deleteOldLogs() {
+  if (isReadOnlyFS) return; // skip cleanup on serverless
+
   const now = Date.now();
   const maxAgeMs = MAX_LOG_AGE_DAYS * 24 * 60 * 60 * 1000;
 
@@ -68,7 +86,6 @@ async function deleteOldLogs() {
   }
 }
 
-// Gọi hàm xóa log ngay khi khởi động / server start song song
 deleteOldLogs().catch((err) => {
   console.error(`❌ Failed to clean logs: ${err.message}`);
 });

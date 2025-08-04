@@ -4,9 +4,18 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const MAX_LOG_AGE_DAYS = 14;
-const logDir = path.join(__dirname, "../../logs");
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir, { recursive: true });
+// Detect serverless environment (Vercel, AWS Lambda...)
+const isReadOnlyFS = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+const baseLogDir = isReadOnlyFS ? "/tmp" : path.join(__dirname, "../../");
+const logDir = path.join(baseLogDir, "logs");
+// Ensure log directory exists
+try {
+    if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+    }
+}
+catch (err) {
+    console.warn(`⚠️ Cannot create log directory: ${err.message}`);
 }
 function getLogFilePath(type) {
     const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
@@ -14,8 +23,14 @@ function getLogFilePath(type) {
 }
 function writeLogToFile(filePath, message) {
     const timestamp = new Date().toISOString();
-    fs.appendFileSync(filePath, `[${timestamp}] ${message}\n`, "utf8");
+    try {
+        fs.appendFileSync(filePath, `[${timestamp}] ${message}\n`, "utf8");
+    }
+    catch (err) {
+        console.warn(`⚠️ Cannot write log: ${err.message}`);
+    }
 }
+// Override console.log
 const originalLog = console.log;
 console.log = (...args) => {
     const message = args
@@ -24,6 +39,7 @@ console.log = (...args) => {
     writeLogToFile(getLogFilePath("app"), message);
     originalLog(...args);
 };
+// Override console.error
 const originalError = console.error;
 console.error = (...args) => {
     const message = args
@@ -32,8 +48,10 @@ console.error = (...args) => {
     writeLogToFile(getLogFilePath("error"), message);
     originalError(...args);
 };
-// 🧹 Xóa log cũ hơn 14 ngày
+// Delete old logs (only in environments with write access)
 async function deleteOldLogs() {
+    if (isReadOnlyFS)
+        return; // skip cleanup on serverless
     const now = Date.now();
     const maxAgeMs = MAX_LOG_AGE_DAYS * 24 * 60 * 60 * 1000;
     try {
@@ -59,7 +77,6 @@ async function deleteOldLogs() {
         console.error(`❌ Failed to read log directory: ${err.message}`);
     }
 }
-// Gọi hàm xóa log ngay khi khởi động / server start song song
 deleteOldLogs().catch((err) => {
     console.error(`❌ Failed to clean logs: ${err.message}`);
 });
