@@ -9,11 +9,13 @@
     "build:css": "npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css",
     "watch:css": "npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch",
     "create:admin": "tsx -r dotenv/config ./utils/admin.ts",
-    "build": "npm run schema:select && npm run prisma:generate && npm run prisma:push && tsx utils/admin.ts && tsc",
+    "build": "npm run schema:select && npm run prisma:generate && npm run prisma:push && tsx utils/admin.ts && rimraf dist && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/index.js && node dist/services/notify.js",
     "dev": "npm run schema:select && npm run prisma:generate && npm run prisma:push && concurrently \"npm run start:ts\" \"npm run watch:css\"",
-    "start:ts": "tsx index.ts"
+    "start:ts": "tsx index.ts",
+    "ts.check": "tsc --project tsconfig.json",
+    "add-build": "git add dist"
   },
   "keywords": [],
   "author": "",
@@ -49,9 +51,16 @@
     "@types/express-ejs-layouts": "^2.5.4",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.13.14",
+    "pre-commit": "^1.2.2",
     "prisma": "^6.5.0",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
-  }
+  },
+  "pre-commit": [
+      "ts.check",
+      "build",
+      "add-build"
+  ]
 }

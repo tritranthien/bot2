@@ -3,5 +3,4 @@ node_modules
 package-lock.json
 /data/*.db
 /logs/*.log
-dist
 /src/output.css
