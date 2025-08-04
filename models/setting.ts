@@ -2,7 +2,7 @@ import { Options } from "discord.js";
 import { config } from "../config.js";
 const repoPath: string = config.repoPath || 'postgresql';
 import Base from "./base.js";
-import { FindOptions } from "../repo/postgresql/base.js";
+import { FindOptions } from "../repo/mongodb/base.js";
 const {SettingRepo} = await import(`../repo/${repoPath}/setting.js`);
 export class Setting extends Base {
     constructor() {
