@@ -7,7 +7,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 function selectSchemaByProvider() {
-    const databaseProvider = process.env.DATABASE_PROVIDER || 'postgresql';
+    const databaseProvider = process.env.DATABASE_PROVIDER || 'mongodb';
     console.log('databaseProvider', databaseProvider);
     const prismaDir = path.join(__dirname, '../prisma');
     const mainSchemaPath = path.join(prismaDir, 'schema.prisma');

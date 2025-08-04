@@ -1,5 +1,5 @@
 import { config } from "../config.js";
-const repoPath = config.repoPath || 'postgresql';
+const repoPath = config.repoPath || 'mongodb';
 import Base, { Repository } from "./base.js";
 const {ChatRepo} = await import(`../repo/${repoPath}/chat.js`);
 const {ChatMessageRepo} = await import(`../repo/${repoPath}/chat_message.js`);

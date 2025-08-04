@@ -1,6 +1,6 @@
 import { Options } from "discord.js";
 import { config } from "../config.js";
-const repoPath: string = config.repoPath || 'postgresql';
+const repoPath: string = config.repoPath || 'mongodb';
 import Base from "./base.js";
 import { FindOptions } from "../repo/mongodb/base.js";
 const {SettingRepo} = await import(`../repo/${repoPath}/setting.js`);

@@ -16,7 +16,7 @@ interface ProviderSchemas {
 }
 
 function selectSchemaByProvider(): void {
-  const databaseProvider = process.env.DATABASE_PROVIDER as DatabaseProvider || 'postgresql';
+  const databaseProvider = process.env.DATABASE_PROVIDER as DatabaseProvider || 'mongodb';
   console.log('databaseProvider',databaseProvider);
   
   const prismaDir = path.join(__dirname, '../prisma');

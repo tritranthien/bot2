@@ -1,5 +1,5 @@
 import { config } from "../config.js";
-const repoPath = config.repoPath || 'postgresql';
+const repoPath = config.repoPath || 'mongodb';
 import Base from "./base.js";
 const { SettingRepo } = await import(`../repo/${repoPath}/setting.js`);
 export class Setting extends Base {

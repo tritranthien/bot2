@@ -1,5 +1,5 @@
 import { config } from "../config.js";
-const repoPath = config.repoPath || 'postgresql';
+const repoPath = config.repoPath || 'mongodb';
 import { checkPassword, hashPassword } from "../utils/passHash.js";
 import jwt from 'jsonwebtoken';
 const {UserRepo} = await import(`../repo/${repoPath}/user.js`);
