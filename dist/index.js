@@ -16,7 +16,10 @@ import { Setting } from './models/setting.js';
 dotenv.config();
 const app = express();
 // ❌ KHÔNG dùng app.listen trên Vercel
-// const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`✅ Server chạy trên port ${PORT}`);
+});
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
 // ✅ Khởi động bot như cũ
