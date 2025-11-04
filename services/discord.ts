@@ -20,6 +20,7 @@ import * as bookmarks from './slashCommands/bookmarks.js';
 import * as voteChoice from './slashCommands/votechoice.js';
 import { agenda } from '../utils/agenda.js';
 import { scheduleDailyJobs } from '../src/queues/agendaQueue.js';
+import messageCreateEvent from "../events/messageCreate.js";
 
 
 interface CommandExecuteParams {
@@ -341,7 +342,18 @@ class DiscordBotService {
   }
 
   async onMessageReceived(message: Message): Promise<void> {
-    if (message.author.bot || !message.content.startsWith(this.configService.getPrefix() || '')) return;
+    if (message.author.bot) return;
+
+    const content = message.content.trim();
+    if (content.startsWith("$$")) {
+      try {
+        return await messageCreateEvent.execute(message);
+      } catch (err) {
+        console.error("❌ Lỗi khi xử lý $$:", err);
+      }
+    }
+
+    if (!message.content.startsWith(this.configService.getPrefix() || '')) return;
 
     const args = message.content.slice(this.configService.getPrefix()?.length || 0).trim().split(/ +/);
     const commandName = args.shift()?.toLowerCase() || '';

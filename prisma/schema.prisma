@@ -1,6 +1,5 @@
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -95,4 +94,16 @@ model bookmarks {
   tags              String[]
   createdAt         DateTime @default(now())
   @@map("bookmarks")
+}
+
+model orders {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  user_name   String   @map("user_name")
+  item_name   String   @map("item_name")
+  item_price  Float
+  voucher     Float
+  amount      Float
+  order_date  DateTime @default(now()) @map("order_date")
+  is_payment  Boolean  @default(false) @map("is_payment")
+  @@map("orders")
 }
