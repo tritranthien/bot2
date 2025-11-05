@@ -1,6 +1,7 @@
-import { Message } from "discord.js";
+import { Message } from "../discord.js";
 import { Order } from "../../models/order.js";
 import { ExecuteParams, Command } from "./types.js";
+import { formatVND, formatDate } from "../../utils/helpers.js";
 
 export default {
     name: "bill",
@@ -48,24 +49,39 @@ export default {
                 let total = 0;
 
                 for (const date of dates) {
-                    replyMsg += `📅 Ngày ${date}:\n`;
+                    replyMsg += "```" + "\n";
+                    replyMsg += `┌──────────────┬──────────────┬──────────────┬──────────────┐\n`;
+                    replyMsg += `│ Ngày order   │ Giá gốc      │ Giảm         │ Thành tiền   │\n`;
+                    replyMsg += `├──────────────┼──────────────┼──────────────┼──────────────┤\n`;
 
-                    for (const order of groupedByDate[date]) {
-                        const { _id, item_name, item_price, voucher = 0, amount } = order;
-                        replyMsg += `> 🧾 (${_id}) ${item_name}: ${item_price} - ${voucher} = ${amount}\n`;
-                        total += amount;
-                    }
+                    const orders = groupedByDate[date];
+                    orders.forEach((order, idx) => {
+                        const orderDate = formatDate(order.order_date.$date || order.order_date);
+                        const price = formatVND(order.item_price).padStart(12);
+                        const discount = formatVND(order.voucher).padStart(12);
+                        const totalAmount = formatVND(order.amount).padStart(12);
+
+                        replyMsg += `│ ${orderDate.padEnd(12)} │ ${price} │ ${discount} │ ${totalAmount} │\n`;
+
+                        if (idx < orders.length - 1)
+                        replyMsg += `├──────────────┼──────────────┼──────────────┼──────────────┤\n`;
+
+                        total += order.amount;
+                    });
+
+                    replyMsg += `└──────────────┴──────────────┴──────────────┴──────────────┘\n`;
+                    replyMsg += "```" + "\n";
                 }
 
                 const firstDate = dates[0];
                 const lastDate = dates[dates.length - 1];
-                replyMsg += `\n🔹 **Tổng từ ngày ${firstDate} đến ${lastDate}: ${total.toLocaleString()}**\n\n`;
+                replyMsg += `🔹 **Tổng từ ngày ${formatDate(firstDate)} đến ${formatDate(lastDate)}: ${formatVND(total)}**\n\n`;
+
             }
 
             return message.reply(replyMsg.trim());
         } catch (err: any) {
-            console.error("Bill command error:", err);
-            return message.reply("❌ Có lỗi khi tính tiền, kiểm tra log đi!!!");
+            return message.reply("❌ Có lỗi khi tính tiền, liên hệ em Sơn đẹp trai nhé!!!");
         }
     },
 } as Command;

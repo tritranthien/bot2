@@ -1,5 +1,6 @@
 import { Events, Message } from "discord.js";
 import { Order } from "../models/order.js";
+import { formatVND, formatDate } from "../utils/helpers.js";
 
 export default {
   name: Events.MessageCreate,
@@ -59,9 +60,8 @@ export default {
         [
           `✅ **Order saved!**`,
           `> 👤 User: **${user_name}**`,
-          `> 🧾 Item: ${formattedDate || "(no content)"}`,
-          `> 💰 Price: ${price.toFixed(2)}`,
-          `> 📅 Date: ${formattedDate}`,
+          `> 💰 Price: ${formatVND(price)}`,
+          `> 📅 Date: ${formatDate(formattedDate)}`,
         ].join("\n")
       );
     } catch (err) {

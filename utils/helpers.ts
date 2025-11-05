@@ -52,3 +52,26 @@ export const sendEmbedMessage = async (
         await channel.send({ embeds: [embed] });
     }
 };
+
+/**
+ * Định dạng tiền tệ theo chuẩn Việt Nam.
+ * @param value - số tiền
+ * @returns Chuỗi ví dụ: "14.000đ"
+ */
+export function formatVND(value: number): string {
+    if (isNaN(value)) return "0đ";
+    return value.toLocaleString("vi-VN") + "đ";
+}
+
+/**
+ * Định dạng ngày (dd/mm/yyyy)
+ * @param dateString - chuỗi hoặc object Date
+ * @returns Chuỗi ngày: "04/11/2025"
+ */
+export function formatDate(dateString: string | Date): string {
+    const d = new Date(dateString);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+}
