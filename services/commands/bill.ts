@@ -1,4 +1,4 @@
-import { Message } from "../discord.js";
+import { Message } from "discord.js";
 import { Order } from "../../models/order.js";
 import { ExecuteParams, Command } from "./types.js";
 import { formatVND, formatDate } from "../../utils/helpers.js";

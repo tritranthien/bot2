@@ -10,39 +10,27 @@ export default {
       const content = message.content.trim();
       console.log(content);
 
-      // Regex: $$ <username> <price>
-      const match = content.match(/\$\$\s+(\S+)\s+(\d+(?:\.\d+)?)/);
+      // Regex: $$ <username> <price> <item_name...>
+      const match = content.match(/^\$\$\s+(\S+)\s+(\d+(?:\.\d+)?)\s*(.*)$/);
       
       if (!match) {
-        await message.reply("⚠️ Cú pháp sai rồi, phải là `$$ <tên_không_có_khoảng_trắng> <price>` nhé!");
+        await message.reply("⚠️ Cú pháp sai rồi, phải là `$$ <tên_không_có_khoảng_trắng> <price> <tên_món>` nhé!");
         return;
       }
 
       const user_name = match[1];
-      const price = parseFloat(match[2]);
+      let price = parseFloat(match[2]);
+      const item_name = match[3]?.trim() || "lười ghi tên món 😅";
 
       if (isNaN(price) || price <= 0) {
         await message.reply("❌ Số tiền không hợp lệ!");
         return;
       }
 
-      // Lấy tin nhắn được forward (tin gốc)
-      // const referenced = message.reference
-      //   ? await message.fetchReference().catch(() => null)
-      //   : null;
+      if (price < 1000) {
+        price = price * 1000;
+      }
 
-      // if (!referenced) {
-      //   await message.reply("⚠️ !!!");
-      //   return;
-      // }
-
-      // item_name = dòng có dấu '+'
-      // const itemLine = referenced.content
-      //   .split("\n")
-      //   .find((l) => l.trim());
-      // const item_name = itemLine
-      //   ? itemLine.replace(/^\+\s*/, "").trim()
-      //   : referenced.content.trim();
 
       const now = new Date();
       const formattedDate = now.toISOString().slice(0, 10);
@@ -50,7 +38,7 @@ export default {
       const order = new Order();
       await order.createOrder({
         user_name,
-        item_name: formattedDate,
+        item_name,
         item_price: price,
         amount: price,
         order_date: now,
@@ -60,12 +48,13 @@ export default {
         [
           `✅ **Order saved!**`,
           `> 👤 User: **${user_name}**`,
+          `> 🍽 Món: ${item_name}`,
           `> 💰 Price: ${formatVND(price)}`,
           `> 📅 Date: ${formatDate(formattedDate)}`,
         ].join("\n")
       );
     } catch (err) {
-      console.error("Error in $$ forward handler:", err);
+      console.error("Error in $$ handler:", err);
       await message.reply("❌ Có lỗi khi lưu order, kiểm tra log đi!");
     }
   },

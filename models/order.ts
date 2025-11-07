@@ -107,49 +107,51 @@ export class Order extends Base {
    *
    * NOTE: adjust this distribution logic if you want different behavior (e.g. distribute evenly).
    *
-   * @param user_name string
    * @param date Date (the day to apply voucher for)
    * @param voucherValue number (total discount to apply for that day)
    */
-  async applyVoucherForDate(user_name: string, date: Date, voucherValue: number): Promise<{ updated: number; remaining: number; }> {
+  async applyVoucherForDate(
+    date: Date,
+    voucherValue: number
+  ): Promise<{ updated: number }> {
     const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
+    start.setHours(0 + 7, 0, 0, 0);
     const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
+    end.setHours(23 + 7, 59, 59, 999);
 
     const orders = await this.repo.findMany({
       where: {
+        is_payment: false,
+        voucher: 0,
         order_date: {
-            gte: start,
-            lte: end,
+          gte: start,
+          lte: end,
         },
-        },
+      },
       orderBy: { order_date: "asc" },
     });
-
-    let remaining = voucherValue;
-    let updated = 0;
-
-    for (const o of orders) {
-      if (remaining <= 0) break;
-      const currentVoucher = Number(o.voucher ?? 0);
-      const currentAmount = Number(o.amount ?? o.item_price ?? 0);
-      
-      const deduct = Math.min(remaining, currentAmount);
-      const newVoucher = currentVoucher + deduct;
-      const newAmount = Math.max(0, currentAmount - deduct);
-
-      // update single order by id
-      await this.repo.save(
-        { voucher: newVoucher, amount: newAmount },
-        { id: o.id }
-      );
-
-      remaining -= deduct;
-      updated += 1;
+    
+    if (!orders.length) {
+      return { updated: 0 };
     }
 
-    return { updated, remaining };
+    let updated = 0;
+    for (const order of orders) {
+      const itemPrice = Number(order.item_price) || 0;
+      const newAmount = Math.max(itemPrice - voucherValue, 0);
+
+      await this.repo.save(
+        {
+          voucher: voucherValue,
+          amount: newAmount,
+        },
+        { id: order.id }
+      );
+
+      updated++;
+    }
+
+    return { updated };
   }
 
   async findOrders(filter: Record<string, any> = {}): Promise<OrderData[]> {
