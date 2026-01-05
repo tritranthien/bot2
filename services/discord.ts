@@ -20,6 +20,7 @@ import * as bookmarks from './slashCommands/bookmarks.js';
 import * as voteChoice from './slashCommands/votechoice.js';
 import { agenda } from '../utils/agenda.js';
 import { scheduleDailyJobs } from '../src/queues/agendaQueue.js';
+import { Setting } from '../models/setting.js';
 
 
 interface CommandExecuteParams {
@@ -83,9 +84,9 @@ class AIService {
   private genAI: GoogleGenerativeAI;
   private model: GenerativeModel;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, model: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-2.5-flash' });
+    this.model = this.genAI.getGenerativeModel({ model: model });
   }
 
   getModel(): GenerativeModel {
@@ -229,7 +230,7 @@ class DiscordBotService {
   private client: Client;
   private configService: ConfigService;
   private loggerService: LoggerService;
-  private aiService: AIService;
+  private aiService!: AIService;
   private commandService: CommandService;
   private moderationService: ModerationService;
   private scheduleService: ScheduleService;
@@ -247,13 +248,15 @@ class DiscordBotService {
 
     this.configService = new ConfigService(config);
     this.loggerService = new LoggerService();
-    this.aiService = new AIService(process.env.AI_API_KEY || '');
     this.commandService = new CommandService();
     this.moderationService = new ModerationService(this.client);
     this.scheduleService = new ScheduleService();
   }
 
   async initialize(): Promise<void> {
+    const settingM = new Setting();
+    const modelAI = await settingM.getSetting(config.modelAI) || process.env.MODEL_AI || 'gemini-2.5-flash';
+    this.aiService = new AIService(process.env.AI_API_KEY || '', modelAI);
     await this.loadCommands();
     this.setupEventListeners();
     await this.login();

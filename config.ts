@@ -8,6 +8,7 @@ export type Config = {
   repoPath?: string;
   channeSpamSettingKey?: string;
   electricTargetKey?: string;
+  modelAI?: string
 }
 
 export const config: Config = {
@@ -19,5 +20,6 @@ export const config: Config = {
   aiChannel: "1354298788004761641",
   repoPath: process.env.REPO_PATH || "mongodb",
   channeSpamSettingKey: 'channel_spam_bot',
-  electricTargetKey: 'electric_target_id'
+  electricTargetKey: 'electric_target_id',
+  modelAI: 'ai_model'
 }

@@ -9,6 +9,10 @@
                         <label class="block text-gray-600" for="electric_target_id">Chích điện người này</label>
                         <input type="text" id="electric_target_id" name="electric_target_id" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="<%=settings.electric_target_id || '' %>" onchange="saveSetting(event)">
                     </div>
+                    <div>
+                        <label class="block text-gray-600" for="electric_target_id">Gemini Model</label>
+                        <input type="text" id="ai_model" name="ai_model" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="<%=settings.ai_model || '' %>" onchange="saveSetting(event)">
+                    </div>
                 </div>
             </form>
             <%- contentFor('scripts') %>
