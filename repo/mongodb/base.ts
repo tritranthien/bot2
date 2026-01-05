@@ -60,13 +60,9 @@ export class BaseRepo {
             if (!upsertOptions.where) {
                 return await this.getTable().create({ data: row });
             }
-            return await this.getTable().upsert({
-                where: upsertOptions.where,
-                update: row,
-                create: {
-                ...where,
-                ...row,
-                },
+            return await this.getTable().update({
+                data: row,
+                where: upsertOptions.where
             });
         } catch (error) {
             console.error('Save error:', error);
