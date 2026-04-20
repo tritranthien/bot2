@@ -17,7 +17,7 @@ const SEND_HOURS = [8, 9, 10, 12, 14, 16, 18];
 const CHECK_INTERVAL_MS = 60 * 1000; // Check mỗi 1 phút
 
 const MESSAGES: Messages = {
-    9: () => `<@everyone, Điểm danh nào! 📝 Bấm "co" nếu bạn có mặt!`,
+    9: () => `@everyone Điểm danh nào! 📝 Bấm "co" hoặc "có" nếu bạn có mặt!`,
     12: (options: Record<string, any>): string =>
         `<@${targetId}>, đã 12h trưa rồi, nghỉ tay đi ăn cơm 🍚🥢 rồi chích điện tiếp thôi! ⚡⚡`,
     14: (options: Record<string, any>): string =>
@@ -108,44 +108,51 @@ export const scheduleAttendance = async (client: Client, config: Config) => {
     }
 
     const message = await channel.send(
-        `${formattedDate}\n@everyone Điểm danh nào! 📝`,
+        `📋 **${formattedDate}**\n@everyone Điểm danh nào! 📝 Bấm **co** hoặc **có** nếu bạn có mặt! _(5 phút)_`,
     );
 
+    const ATTENDANCE_WORDS = ["co", "có"];
     const filter = (response: { content: string }) =>
-        response.content.toLowerCase() === "co";
+        ATTENDANCE_WORDS.includes(response.content.toLowerCase().trim());
     const collector = channel.createMessageCollector({
         filter,
-        time: 2 * 60 * 1000,
+        time: 5 * 60 * 1000,
     });
 
-    const membersWhoReplied = new Set();
+    const membersWhoReplied = new Map<string, string>(); // id -> displayName
 
-    collector.on("collect", (message) => {
-        console.log(`${message.author.tag} đã điểm danh!`);
-        membersWhoReplied.add(message.author.id);
+    collector.on("collect", async (msg) => {
+        if (!membersWhoReplied.has(msg.author.id)) {
+            console.log(`${msg.author.tag} đã điểm danh!`);
+            membersWhoReplied.set(msg.author.id, msg.author.displayName || msg.author.username);
+            await msg.react("✅").catch(() => {});
+        }
     });
 
     collector.on("end", async (collected, reason) => {
-        if (reason === "time") {
-            const members = await message.guild.members.fetch();
-            const membersNotReplied = members.filter(
-                (member) => !membersWhoReplied.has(member.id) && !member.user.bot,
-            );
+        const members = await message.guild.members.fetch();
+        const humanMembers = members.filter((m) => !m.user.bot);
+        const total = humanMembers.size;
+        const presentCount = membersWhoReplied.size;
 
-            if (membersNotReplied.size > 0) {
-                const missingMembers = membersNotReplied
-                    .map((member) => member.user.tag)
-                    .join(", ");
-                console.log("Missing members:", missingMembers);
-                channel.send(`⏰ Đã hết thời gian điểm danh!`);
-                channel.send(
-                    `⚠️ Danh sách những người vắng mặt sẽ bị chích điện ⚡: ${missingMembers} \n \n Nhớ Stand Up Daily nhé 📃`,
-                );
-            } else {
-                channel.send("🎉 Tất cả mọi người đã điểm danh!");
-            }
+        const presentList = [...membersWhoReplied.values()].join(", ") || "_(không có ai)_";
+
+        const membersNotReplied = humanMembers.filter(
+            (member) => !membersWhoReplied.has(member.id),
+        );
+
+        if (membersNotReplied.size === 0) {
+            channel.send(
+                `✅ **Điểm danh kết thúc!**\n🎉 Tất cả **${total}/${total}** người đã có mặt!\n👥 Có mặt: ${presentList}`,
+            );
         } else {
-            channel.send("🎉 Cảm ơn các bạn đã điểm danh!");
+            const missingMentions = membersNotReplied.map((m) => `<@${m.id}>`).join(", ");
+            channel.send(
+                `⏰ **Điểm danh kết thúc!**\n` +
+                `✅ Có mặt (${presentCount}/${total}): ${presentList}\n` +
+                `⚡ Vắng mặt (${membersNotReplied.size}/${total}): ${missingMentions}\n\n` +
+                `Nhớ Stand Up Daily nhé 📃`,
+            );
         }
     });
 };
