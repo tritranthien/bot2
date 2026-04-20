@@ -1,8 +1,10 @@
-node_modules/*
+node_modules/
 .env
 package-lock.json
 /data/*.db
 /logs/*.log
-dist
+dist/
 /src/output.css
-prisma
+
+# Prisma
+prisma/*.db
