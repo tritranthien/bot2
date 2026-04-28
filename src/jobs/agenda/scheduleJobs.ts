@@ -38,9 +38,7 @@ export const defineMessageJob = (
     if (weekday === 0 || weekday === 6) return;
     if (currentHour !== hour) return;
 
-    const message = MESSAGES[hour]
-      ? MESSAGES[hour]({ targetId })
-      : `<@${targetId}>, tới giờ chích điện định kỳ ⚡⚡⚡`;
+    const message =  MESSAGES[hour]({ targetId });
 
     if (hour === 9) {
       await scheduleAttendance(client, config);
